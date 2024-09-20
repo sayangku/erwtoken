@@ -88,11 +88,14 @@
 
         function checkLevelUp() {
             const newTokens = Math.floor(points / 100);
-            if (newTokens > erwTokens) {
-                erwTokens = newTokens;
+            if (newTokens > 0) {
+                erwTokens += newTokens;
                 points %= 100;
-                level = Math.floor(erwTokens / 10) + 1;
-                updateStatus(`Tebrikler! Yeni seviye: ${level}`);
+                const newLevel = Math.floor(erwTokens / 10) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    updateStatus(`Tebrikler! Yeni seviye: ${level}`);
+                }
             }
         }
 
@@ -136,9 +139,6 @@
                 window.Telegram.WebApp.sendData(JSON.stringify(gameData));
             }
         });
-
-        createBoard();
-        updateStatus();
     </script>
 </body>
 </html>
