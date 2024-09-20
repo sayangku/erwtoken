@@ -113,7 +113,6 @@
         createBoard();
         updateStatus();
 
-        // Telegram WebApp entegrasyonu
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
             const gameData = {
@@ -122,12 +121,12 @@
                 level: level,
                 forestSize: forestSize
             };
-            console.log("Sending data:", gameData);  // Hata ayıklama için
+            console.log("Sending data:", gameData);
             window.Telegram.WebApp.sendData(JSON.stringify(gameData));
+            alert("Oyun verileri gönderildi!");
             window.Telegram.WebApp.close();
         });
 
-        // WebApp kapatıldığında da veri gönderelim
         window.Telegram.WebApp.onEvent('viewportChanged', () => {
             if (!window.Telegram.WebApp.isExpanded) {
                 const gameData = {
@@ -136,7 +135,7 @@
                     level: level,
                     forestSize: forestSize
                 };
-                console.log("Sending data on close:", gameData);  // Hata ayıklama için
+                console.log("Sending data on close:", gameData);
                 window.Telegram.WebApp.sendData(JSON.stringify(gameData));
             }
         });
