@@ -6,7 +6,40 @@
     <title>EcoReward Orman Oyunu</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Önceki CSS stilleri burada */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #2e7d32;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .tree-button {
+            font-size: 40px;
+            padding: 10px;
+            background-color: #a5d6a7;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .tree-button:active {
+            transform: scale(0.95);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #1b5e20;
+        }
     </style>
 </head>
 <body>
@@ -23,27 +56,11 @@
         let level = 1;
         let forestSize = 0;
 
-        // Oyun verilerini yükle
-        function loadGameData() {
-            const initData = window.Telegram.WebApp.initData;
-            if (initData) {
-                const data = JSON.parse(initData);
-                points = data.points || 0;
-                erwTokens = data.erw_tokens || 0;
-                level = data.level || 1;
-                forestSize = data.forest ? data.forest.length : 0;
-                gameBoard = data.forest || createNewBoard();
-            } else {
-                gameBoard = createNewBoard();
-            }
-            renderBoard();
-            updateStatus();
-        }
-
-        function createNewBoard() {
-            return Array(9).fill().map(() => {
+        function createBoard() {
+            gameBoard = Array(9).fill().map(() => {
                 return Math.random() < 0.1 ? rareTrees[Math.floor(Math.random() * rareTrees.length)] : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
             });
+            renderBoard();
         }
 
         function renderBoard() {
@@ -93,22 +110,19 @@
             `;
         }
 
-        // Oyun verilerini kaydet
-        function saveGameData() {
+        createBoard();
+        updateStatus();
+
+        // Telegram WebApp entegrasyonu
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
             window.Telegram.WebApp.sendData(JSON.stringify({
                 points: points,
                 erwTokens: erwTokens,
                 level: level,
-                forest: gameBoard
+                forestSize: forestSize
             }));
-        }
-
-        // Oyunu başlat
-        loadGameData();
-
-        // Telegram WebApp entegrasyonu
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(saveGameData);
+        });
     </script>
 </body>
 </html>
