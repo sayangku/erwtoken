@@ -116,12 +116,29 @@
         // Telegram WebApp entegrasyonu
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
-            window.Telegram.WebApp.sendData(JSON.stringify({
+            const gameData = {
                 points: points,
                 erwTokens: erwTokens,
                 level: level,
                 forestSize: forestSize
-            }));
+            };
+            console.log("Sending data:", gameData);  // Hata ayıklama için
+            window.Telegram.WebApp.sendData(JSON.stringify(gameData));
+            window.Telegram.WebApp.close();
+        });
+
+        // WebApp kapatıldığında da veri gönderelim
+        window.Telegram.WebApp.onEvent('viewportChanged', () => {
+            if (!window.Telegram.WebApp.isExpanded) {
+                const gameData = {
+                    points: points,
+                    erwTokens: erwTokens,
+                    level: level,
+                    forestSize: forestSize
+                };
+                console.log("Sending data on close:", gameData);  // Hata ayıklama için
+                window.Telegram.WebApp.sendData(JSON.stringify(gameData));
+            }
         });
     </script>
 </body>
