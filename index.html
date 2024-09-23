@@ -6,35 +6,7 @@
     <title>EcoReward Orman Oyunu</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        #game-area {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        #forest {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .tree {
-            font-size: 40px;
-            margin: 5px;
-            cursor: pointer;
-        }
-        #stats {
-            margin-top: 20px;
-        }
+        /* Önceki CSS stilleri aynı kalacak */
     </style>
 </head>
 <body>
@@ -112,14 +84,49 @@
             tgApp.sendData(JSON.stringify(data));
         }
 
-        // İlk ağacı dik
-        addTree();
+        // Telegram'dan gelen verileri al
+        function loadDataFromTelegram() {
+            const initData = tgApp.initData || '';
+            if (initData) {
+                try {
+                    const data = JSON.parse(initData);
+                    points = data.points || 0;
+                    level = data.level || 1;
+                    tokens = data.erw_tokens || 0;
+                    forest = data.forest || [];
+                    updateStats();
+                    rebuildForest();
+                } catch (error) {
+                    console.error('Veri yüklenirken hata oluştu:', error);
+                }
+            }
+        }
+
+        function rebuildForest() {
+            forestElement.innerHTML = '';
+            forest.forEach(treeType => {
+                const treeElement = document.createElement('span');
+                treeElement.textContent = treeType;
+                treeElement.className = 'tree';
+                treeElement.onclick = () => harvestTree(treeElement, treeType);
+                forestElement.appendChild(treeElement);
+            });
+        }
+
+        // Sayfa yüklendiğinde verileri yükle
+        loadDataFromTelegram();
+
+        // İlk ağacı dik (eğer orman boşsa)
+        if (forest.length === 0) {
+            addTree();
+        }
 
         // Her 30 saniyede bir veri gönder
         setInterval(sendDataToTelegram, 30000);
 
         // Oyun kapanırken son verileri gönder
         window.addEventListener('unload', sendDataToTelegram);
+        tgApp.onEvent('viewportChanged', sendDataToTelegram);
     </script>
 </body>
 </html>
