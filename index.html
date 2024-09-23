@@ -116,6 +116,7 @@
         // Telegram WebApp entegrasyonu
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
+            console.log("Butona tıklandı!");  // Konsola mesaj yazdır
             window.Telegram.WebApp.sendData(JSON.stringify({
                 points: points,
                 erwTokens: erwTokens,
