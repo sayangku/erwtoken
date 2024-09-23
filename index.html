@@ -56,48 +56,73 @@
         let level = 1;
         let forestSize = 0;
 
-        function updateStatus() {
-            document.getElementById('status').innerText = `Puan: ${points} | ERW Token: ${erwTokens} | Seviye: ${level} | Orman Büyüklüğü: ${forestSize}`;
+        function createBoard() {
+            gameBoard = Array(9).fill().map(() => {
+                return Math.random() < 0.1 ? rareTrees[Math.floor(Math.random() * rareTrees.length)] : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+            });
+            renderBoard();
         }
 
-        function generateGameBoard() {
-            for (let i = 0; i < 9; i++) {
-                const treeType = Math.random() < 0.1 ? rareTrees[Math.floor(Math.random() * rareTrees.length)] : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
-                gameBoard.push(treeType);
+        function renderBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            gameBoard.forEach((tree, index) => {
                 const button = document.createElement('button');
-                button.innerText = treeType;
-                button.classList.add('tree-button');
-                button.onclick = () => handleTreeClick(treeType);
-                document.getElementById('game-board').appendChild(button);
+                button.className = 'tree-button';
+                button.textContent = tree;
+                button.onclick = () => tapTree(index);
+                boardElement.appendChild(button);
+            });
+        }
+
+        function tapTree(index) {
+            const tappedTree = gameBoard[index];
+            let earnedPoints = rareTrees.includes(tappedTree) ? Math.floor(Math.random() * 11) + 10 : Math.floor(Math.random() * 5) + 1;
+            points += earnedPoints;
+            forestSize++;
+            gameBoard[index] = treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+            renderBoard();
+            updateStatus(`+${earnedPoints} puan kazandın!`);
+            checkLevelUp();
+        }
+
+        function checkLevelUp() {
+            const newTokens = Math.floor(points / 100);
+            if (newTokens > 0) {
+                erwTokens += newTokens;
+                points %= 100;
+                const newLevel = Math.floor(erwTokens / 10) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    updateStatus(`Tebrikler! Yeni seviye: ${level}`);
+                }
             }
         }
 
-        function handleTreeClick(treeType) {
-            points += 10;  // Ağaç tıklama puanı
-            if (rareTrees.includes(treeType)) {
-                points += 20; // Nadir ağaç bonusu
-            }
-            forestSize += 1; // Orman büyüklüğü artıyor
-            updateStatus();
+        function updateStatus(message = '') {
+            const statusElement = document.getElementById('status');
+            statusElement.innerHTML = `
+                Seviye: ${level} 🏆<br>
+                Puanınız: ${points}<br>
+                ERW Token: ${erwTokens}<br>
+                Orman Büyüklüğü: ${forestSize} 🌳<br>
+                ${message}
+            `;
         }
 
-        function sendData() {
-            const gameData = {
+        createBoard();
+        updateStatus();
+
+        // Telegram WebApp entegrasyonu
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
+            window.Telegram.WebApp.sendData(JSON.stringify({
                 points: points,
                 erwTokens: erwTokens,
                 level: level,
                 forestSize: forestSize
-            };
-            console.log("Oyun verileri gönderiliyor:", gameData);
-            window.Telegram.WebApp.sendData(JSON.stringify(gameData));
-            console.log("Oyun verileri gönderildi.");
-        }
-
-        window.onbeforeunload = sendData; // Sayfa kapatılmadan önce veri gönder
-
-        // Oyun başlatıldığında
-        generateGameBoard();
-        updateStatus();
+            }));
+        });
     </script>
 </body>
 </html>
