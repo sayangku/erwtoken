@@ -82,7 +82,7 @@
             forestSize++;
             gameBoard[index] = treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
             renderBoard();
-            updateStatus(+${earnedPoints} puan kazandın!);
+            updateStatus(`+${earnedPoints} puan kazandın!`);
             checkLevelUp();
         }
 
@@ -94,20 +94,20 @@
                 const newLevel = Math.floor(erwTokens / 10) + 1;
                 if (newLevel > level) {
                     level = newLevel;
-                    updateStatus(Tebrikler! Yeni seviye: ${level});
+                    updateStatus(`Tebrikler! Yeni seviye: ${level}`);
                 }
             }
         }
 
         function updateStatus(message = '') {
             const statusElement = document.getElementById('status');
-            statusElement.innerHTML = 
+            statusElement.innerHTML = `
                 Seviye: ${level} 🏆<br>
                 Puanınız: ${points}<br>
                 ERW Token: ${erwTokens}<br>
                 Orman Büyüklüğü: ${forestSize} 🌳<br>
                 ${message}
-            ;
+            `;
         }
 
         createBoard();
