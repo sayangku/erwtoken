@@ -1,100 +1,135 @@
-import json
-import sqlite3
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-
-# Sabitler
-TREES = ['🌳', '🌴', '🌲', '🌿', '🍃']
-RARE_TREES = ['🍎', '🍐', '🍊', '🥥', '🌺']
-
-# Veritabanı bağlantısı
-conn = sqlite3.connect('ecoreward.db')
-c = conn.cursor()
-
-# Tablo oluştur
-c.execute('''CREATE TABLE IF NOT EXISTS players
-             (user_id INTEGER PRIMARY KEY, points INTEGER, level INTEGER, erw_tokens INTEGER, forest_size INTEGER)''')
-conn.commit()
-
-def get_player_data(user_id):
-    c.execute("SELECT * FROM players WHERE user_id = ?", (user_id,))
-    data = c.fetchone()
-    if data:
-        return {
-            'points': data[1],
-            'level': data[2],
-            'erw_tokens': data[3],
-            'forest_size': data[4]
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoReward Orman Oyunu</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
         }
-    return None
-
-def update_player_data(user_id, points, level, erw_tokens, forest_size):
-    c.execute("""INSERT OR REPLACE INTO players (user_id, points, level, erw_tokens, forest_size)
-                 VALUES (?, ?, ?, ?, ?)""", (user_id, points, level, erw_tokens, forest_size))
-    conn.commit()
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    player_data = get_player_data(user_id)
-
-    if not player_data:
-        player_data = {
-            'points': 0,
-            'level': 1,
-            'erw_tokens': 0,
-            'forest_size': 0
+        h1 {
+            color: #2e7d32;
         }
-        update_player_data(user_id, **player_data)
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .tree-button {
+            font-size: 40px;
+            padding: 10px;
+            background-color: #a5d6a7;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .tree-button:active {
+            transform: scale(0.95);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌍 EcoReward Orman Oyunu 🌍</h1>
+    <div id="status"></div>
+    <div id="game-board"></div>
 
-    # Verileri WebApp'e parametre olarak gönderiyoruz
-    web_app = WebAppInfo(url=f"https://sayangku.github.io/erwtoken/?points={player_data['points']}&level={player_data['level']}&erwTokens={player_data['erw_tokens']}&forestSize={player_data['forest_size']}")
-    keyboard = [[InlineKeyboardButton("Oyunu Başlat", web_app=web_app)]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    <script>
+        const treeEmojis = ['🌳', '🌴', '🌲', '🌿', '🍃'];
+        const rareTrees = ['🍎', '🍐', '🍊', '🥥', '🌺'];
+        let gameBoard = [];
+        let points = 0;
+        let erwTokens = 0;
+        let level = 1;
+        let forestSize = 0;
 
-    message = (
-        f"🌍 EcoReward Orman Oyunu'na hoş geldiniz!\n\n"
-        f"Oyunu başlatmak için aşağıdaki butona tıklayın.\n"
-        f"Ağaçlara tıklayarak puan kazanın ve ormanı büyütün!\n"
-        f"Nadir ağaçları ({' '.join(RARE_TREES)}) bulun, ekstra puan kazanın!\n"
-        f"Her 100 puan için 1 ERW token alırsınız!\n"
-        f"Her 10 ERW token için 1 seviye atlarsınız!"
-    )
+        // URL'den gelen parametreleri alıyoruz
+        const urlParams = new URLSearchParams(window.location.search);
+        points = parseInt(urlParams.get('points')) || 0;
+        erwTokens = parseInt(urlParams.get('erwTokens')) || 0;
+        level = parseInt(urlParams.get('level')) || 1;
+        forestSize = parseInt(urlParams.get('forestSize')) || 0;
 
-    await update.message.reply_text(text=message, reply_markup=reply_markup)
+        function createBoard() {
+            gameBoard = Array(9).fill().map(() => {
+                return Math.random() < 0.1 ? rareTrees[Math.floor(Math.random() * rareTrees.length)] : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+            });
+            renderBoard();
+        }
 
-async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        data = json.loads(update.effective_message.web_app_data.data)
-        print(f"Gelen veri: {data}")  # Gelen veriyi yazdır
-        user_id = update.effective_user.id
+        function renderBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            gameBoard.forEach((tree, index) => {
+                const button = document.createElement('button');
+                button.className = 'tree-button';
+                button.textContent = tree;
+                button.onclick = () => tapTree(index);
+                boardElement.appendChild(button);
+            });
+        }
 
-        points = int(data['points'])
-        erw_tokens = int(data['erwTokens'])
-        level = int(data['level'])
-        forest_size = int(data['forestSize'])
+        function tapTree(index) {
+            const tappedTree = gameBoard[index];
+            let earnedPoints = rareTrees.includes(tappedTree) ? Math.floor(Math.random() * 11) + 10 : Math.floor(Math.random() * 5) + 1;
+            points += earnedPoints;
+            forestSize++;
+            gameBoard[index] = treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+            renderBoard();
+            updateStatus(`+${earnedPoints} puan kazandın!`);
+            checkLevelUp();
+        }
 
-        update_player_data(user_id, points, level, erw_tokens, forest_size)
+        function checkLevelUp() {
+            const newTokens = Math.floor(points / 100);
+            if (newTokens > 0) {
+                erwTokens += newTokens;
+                points %= 100;
+                const newLevel = Math.floor(erwTokens / 10) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    updateStatus(`Tebrikler! Yeni seviye: ${level}`);
+                }
+            }
+        }
 
-        message = (
-            f"Oyun sonucu güncellendi!\n"
-            f"Puanınız: {points}\n"
-            f"ERW Token: {erw_tokens}\n"
-            f"Seviye: {level}\n"
-            f"Orman Büyüklüğü: {forest_size} 🌳"
-        )
-        await update.message.reply_text(message)
-    except Exception as e:
-        await update.message.reply_text(f"Bir hata oluştu: {str(e)}")
+        function updateStatus(message = '') {
+            const statusElement = document.getElementById('status');
+            statusElement.innerHTML = `
+                Seviye: ${level} 🏆<br>
+                Puanınız: ${points}<br>
+                ERW Token: ${erwTokens}<br>
+                Orman Büyüklüğü: ${forestSize} 🌳<br>
+                ${message}
+            `;
+        }
 
-def main():
-    application = Application.builder().token("6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc").build()
+        createBoard();
+        updateStatus();
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
-
-    application.run_polling()
-
-if __name__ == '__main__':
-    print("Bot başlatılıyor...")
-    main()
-    print("Bot durduruldu.")
+        // Telegram WebApp entegrasyonu
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
+            window.Telegram.WebApp.sendData(JSON.stringify({
+                points: points,
+                erwTokens: erwTokens,
+                level: level,
+                forestSize: forestSize
+            }));
+        });
+    </script>
+</body>
+</html>
