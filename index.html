@@ -4,74 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EcoReward Orman Oyunu</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        /* Existing styles... */
-    </style>
 </head>
 <body>
     <h1>🌍 EcoReward Orman Oyunu 🌍</h1>
-    <div id="status"></div>
-    <div id="game-board"></div>
-    <button id="endGameButton" style="display:none;">Oyunu Bitir</button>
+    <p>Oyun bitirildiğinde verileri Telegram'a gönder.</p>
+    <button id="finishGameBtn">Oyunu Bitir</button>
 
     <script>
-        const treeEmojis = ['🌳', '🌴', '🌲', '🌿', '🍃'];
-        const rareTrees = ['🍎', '🍐', '🍊', '🥥', '🌺'];
-        let gameBoard = [];
-        let points = 0;
-        let erwTokens = 0;
-        let level = 1;
-        let forestSize = 0;
+        const finishGameBtn = document.getElementById('finishGameBtn');
 
-        // URL'den gelen parametreleri alıyoruz
-        const urlParams = new URLSearchParams(window.location.search);
-        points = parseInt(urlParams.get('points')) || 0;
-        erwTokens = parseInt(urlParams.get('erwTokens')) || 0;
-        level = parseInt(urlParams.get('level')) || 1;
-        forestSize = parseInt(urlParams.get('forestSize')) || 0;
+        finishGameBtn.addEventListener('click', () => {
+            const points = 150; // Bu veriler dinamik olabilir
+            const erwTokens = 15; // Dinamik
+            const level = 2; // Dinamik
+            const forestSize = 5; // Dinamik
 
-        // Existing functions: createBoard, renderBoard, tapTree, checkLevelUp, updateStatus
-
-        function endGame() {
-            console.log("Oyunu Bitir butonu tıklandı");
-            const gameData = {
+            // Telegram WebApp verilerini gönder
+            const data = {
                 points: points,
                 erwTokens: erwTokens,
                 level: level,
                 forestSize: forestSize
             };
-            console.log("Gönderilecek veri:", gameData);
-            
-            try {
-                window.Telegram.WebApp.sendData(JSON.stringify(gameData));
-                console.log("Veri başarıyla gönderildi");
-            } catch (error) {
-                console.error("Veri gönderirken hata oluştu:", error);
-                alert("Oyun verisi gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+
+            // Telegram WebApp API'sini kullanarak veriyi gönder
+            if (window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify(data)); // Veriyi JSON formatında gönder
+            } else {
+                alert("Telegram WebApp API'si bulunamadı.");
             }
-        }
+        });
 
-        createBoard();
-        updateStatus();
-
-        // Telegram WebApp entegrasyonu
-        window.Telegram.WebApp.ready();
-        
-        const endGameButton = document.getElementById('endGameButton');
-        
-        if (window.Telegram.WebApp.platform === "android" || window.Telegram.WebApp.platform === "ios") {
-            // Mobil cihazlar için özel buton
-            endGameButton.style.display = 'block';
-            endGameButton.addEventListener('click', endGame);
-        } else {
-            // Masaüstü için MainButton
-            window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(endGame);
-        }
-
-        // Debug bilgisi
-        console.log("Telegram WebApp Platform:", window.Telegram.WebApp.platform);
-        console.log("Telegram WebApp Version:", window.Telegram.WebApp.version);
+        // Telegram WebApp başlatıldığında
+        Telegram.WebApp.ready();
     </script>
 </body>
 </html>
