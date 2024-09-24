@@ -133,29 +133,37 @@
 
         // Telegram WebApp entegrasyonu
         window.Telegram.WebApp.ready();
-        if (window.Telegram.WebApp.isMobile()) {
-            window.Telegram.WebApp.expand();
-        }
-
         window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
-            console.log('MainButton tıklandı!'); // Kontrol amaçlı log ekleyin
-            window.Telegram.WebApp.sendData(JSON.stringify({
-                points: points,
-                erwTokens: erwTokens,
-                level: level,
-                forestSize: forestSize
-            }));
+            try {
+                const data = JSON.stringify({
+                    points: points,
+                    erwTokens: erwTokens,
+                    level: level,
+                    forestSize: forestSize
+                });
+
+                console.log('Veri gönderiliyor:', data);  // Verilerin gönderildiğini doğrulayın
+                window.Telegram.WebApp.sendData(data);
+            } catch (error) {
+                console.error('Veri gönderilemedi:', error);  // Hata mesajı göster
+            }
         });
 
-        // Alternatif manuel buton (mobil için)
+        // Manuel buton (mobilde ek güvenlik)
         document.getElementById('bitirButon').addEventListener('click', () => {
-            console.log('Manuel Oyunu Bitir butonuna basıldı!');
-            window.Telegram.WebApp.sendData(JSON.stringify({
-                points: points,
-                erwTokens: erwTokens,
-                level: level,
-                forestSize: forestSize
-            }));
+            try {
+                const data = JSON.stringify({
+                    points: points,
+                    erwTokens: erwTokens,
+                    level: level,
+                    forestSize: forestSize
+                });
+
+                console.log('Manuel butona tıklandı, veri gönderiliyor:', data);
+                window.Telegram.WebApp.sendData(data);
+            } catch (error) {
+                console.error('Manuel veri gönderilemedi:', error);
+            }
         });
     </script>
 </body>
