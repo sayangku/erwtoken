@@ -40,12 +40,23 @@
             font-size: 18px;
             color: #1b5e20;
         }
+        #bitirButon {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>🌍 EcoReward Orman Oyunu 🌍</h1>
     <div id="status"></div>
     <div id="game-board"></div>
+    <button id="bitirButon">Oyunu Bitir</button>
 
     <script>
         const treeEmojis = ['🌳', '🌴', '🌲', '🌿', '🍃'];
@@ -122,7 +133,23 @@
 
         // Telegram WebApp entegrasyonu
         window.Telegram.WebApp.ready();
+        if (window.Telegram.WebApp.isMobile()) {
+            window.Telegram.WebApp.expand();
+        }
+
         window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
+            console.log('MainButton tıklandı!'); // Kontrol amaçlı log ekleyin
+            window.Telegram.WebApp.sendData(JSON.stringify({
+                points: points,
+                erwTokens: erwTokens,
+                level: level,
+                forestSize: forestSize
+            }));
+        });
+
+        // Alternatif manuel buton (mobil için)
+        document.getElementById('bitirButon').addEventListener('click', () => {
+            console.log('Manuel Oyunu Bitir butonuna basıldı!');
             window.Telegram.WebApp.sendData(JSON.stringify({
                 points: points,
                 erwTokens: erwTokens,
