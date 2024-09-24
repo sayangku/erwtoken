@@ -56,6 +56,13 @@
         let level = 1;
         let forestSize = 0;
 
+        // URL'den gelen parametreleri alıyoruz
+        const urlParams = new URLSearchParams(window.location.search);
+        points = parseInt(urlParams.get('points')) || 0;
+        erwTokens = parseInt(urlParams.get('erwTokens')) || 0;
+        level = parseInt(urlParams.get('level')) || 1;
+        forestSize = parseInt(urlParams.get('forestSize')) || 0;
+
         function createBoard() {
             gameBoard = Array(9).fill().map(() => {
                 return Math.random() < 0.1 ? rareTrees[Math.floor(Math.random() * rareTrees.length)] : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
