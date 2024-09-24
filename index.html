@@ -121,5 +121,15 @@
         updateStatus();
 
         // Telegram WebApp entegrasyonu
-        const mainButton = new Telegram.WebApp.MainButton();
-        mainButton.text = 'SHOW
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
+            window.Telegram.WebApp.sendData(JSON.stringify({
+                points: points,
+                erwTokens: erwTokens,
+                level: level,
+                forestSize: forestSize
+            }));
+        });
+    </script>
+</body>
+</html>
