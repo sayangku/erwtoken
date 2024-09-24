@@ -101,35 +101,27 @@
                 const newLevel = Math.floor(erwTokens / 10) + 1;
                 if (newLevel > level) {
                     level = newLevel;
-                    updateStatus(`Tebrikler! Yeni seviye: ${level}`);
+                    updateStatus(`Tebrikler! ${level}. seviyeye ulaştınız!`);
                 }
             }
         }
 
-        function updateStatus(message = '') {
+        function updateStatus(message) {
             const statusElement = document.getElementById('status');
-            statusElement.innerHTML = `
-                Seviye: ${level} 🏆<br>
-                Puanınız: ${points}<br>
-                ERW Token: ${erwTokens}<br>
-                Orman Büyüklüğü: ${forestSize} 🌳<br>
-                ${message}
-            `;
+            statusElement.textContent = message;
         }
 
         createBoard();
-        updateStatus();
 
-        // Telegram WebApp entegrasyonu
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.MainButton.setText('Oyunu Bitir').show().onClick(() => {
-            window.Telegram.WebApp.sendData(JSON.stringify({
+        // Telegram WebApp verilerini gönderme
+        Telegram.WebApp.onEvent('mainButtonClicked', () => {
+            const data = {
                 points: points,
                 erwTokens: erwTokens,
                 level: level,
                 forestSize: forestSize
-            }));
+            };
+            Telegram.WebApp.sendData(JSON.stringify(data));
         });
-    </script>
-</body>
-</html>
+
+        Telegram.WebApp.MainButton.setText('Ver
