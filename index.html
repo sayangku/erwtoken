@@ -11,6 +11,14 @@
     <button id="finishGameBtn">Oyunu Bitir</button>
 
     <script>
+        // Telegram WebApp API'nin çalışıp çalışmadığını kontrol et
+        if (window.Telegram.WebApp) {
+            console.log("Telegram WebApp API mevcut.");
+            Telegram.WebApp.ready(); // WebApp'in hazır olduğunu belirt
+        } else {
+            console.error("Telegram WebApp API bulunamadı.");
+        }
+
         const finishGameBtn = document.getElementById('finishGameBtn');
 
         finishGameBtn.addEventListener('click', () => {
@@ -19,7 +27,7 @@
             const level = 2; // Dinamik
             const forestSize = 5; // Dinamik
 
-            // Telegram WebApp verilerini gönder
+            // Gönderilecek veriler
             const data = {
                 points: points,
                 erwTokens: erwTokens,
@@ -27,16 +35,16 @@
                 forestSize: forestSize
             };
 
+            console.log("Gönderilen veri:", data); // Veriyi konsola yazdır
+
             // Telegram WebApp API'sini kullanarak veriyi gönder
             if (window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify(data)); // Veriyi JSON formatında gönder
+                Telegram.WebApp.sendData(JSON.stringify(data)); // Veriyi JSON formatında Telegram'a gönder
+                console.log("Veri Telegram'a gönderildi.");
             } else {
-                alert("Telegram WebApp API'si bulunamadı.");
+                console.error("Telegram WebApp API bulunamadı.");
             }
         });
-
-        // Telegram WebApp başlatıldığında
-        Telegram.WebApp.ready();
     </script>
 </body>
 </html>
