@@ -45,6 +45,19 @@ def create_database():
     conn.commit()
     conn.close()
 
+def update_user_data(telegram_id, score, erw_tokens, level):
+    conn = get_db_connection()
+    conn.execute('''INSERT OR REPLACE INTO users (telegram_id, score, erw_tokens, level)
+                    VALUES (?, ?, ?, ?)''', (telegram_id, score, erw_tokens, level))
+    conn.commit()
+    conn.close()
+
+def get_user_data(telegram_id):
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE telegram_id = ?', (telegram_id,)).fetchone()
+    conn.close()
+    return user
+
 # Bot komutları
 async def start(update: Update, context):
     try:
@@ -57,20 +70,35 @@ async def start(update: Update, context):
         game_url = f"{PROJECT_URL}/?user_id={user_id}"
         message = f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\nOyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
-        print(f"Start komutu başarıyla işlendi. User ID: {user_id}")  # Debug log
+        print(f"Start komutu başarıyla işlendi. User ID: {user_id}")
     except Exception as e:
-        print(f"Start komutunda hata: {str(e)}")  # Hata logu
+        print(f"Start komutunda hata: {str(e)}")
         await update.message.reply_text("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
+
+async def stats(update: Update, context):
+    try:
+        user_id = update.effective_user.id
+        user = get_user_data(user_id)
+
+        if user:
+            message = f"📊 İstatistikleriniz:\n\nPuan: {user['score']}\nERW Token: {user['erw_tokens']}\nSeviye: {user['level']}"
+        else:
+            message = "Henüz oyun oynamadınız. /start komutunu kullanarak oyuna başlayabilirsiniz."
+
+        await update.message.reply_text(message)
+        print(f"Stats komutu başarıyla işlendi. User ID: {user_id}")
+    except Exception as e:
+        print(f"Stats komutunda hata: {str(e)}")
+        await update.message.reply_text("İstatistikler alınırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
 
 # Flask route'ları
 @app.route('/')
 def serve_index():
     try:
-        # index.html dosyasının tam yolunu belirle
         current_dir = os.path.dirname(os.path.abspath(__file__))
         return send_from_directory(current_dir, 'index.html')
     except Exception as e:
-        print(f"Index servis hatası: {str(e)}")  # Hata logu
+        print(f"Index servis hatası: {str(e)}")
         return "Sayfa yüklenirken bir hata oluştu", 500
 
 @app.route('/update_score', methods=['POST'])
@@ -87,7 +115,7 @@ def update_score():
             return jsonify({"status": "success"}), 200
         return jsonify({"status": "error", "message": "Eksik veri"}), 400
     except Exception as e:
-        print(f"Update score hatası: {str(e)}")  # Hata logu
+        print(f"Update score hatası: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 def run_flask():
