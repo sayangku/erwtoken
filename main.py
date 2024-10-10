@@ -41,10 +41,7 @@ DATABASE_URL = "postgresql://veritabani2_user:zjXJo4MqrVDpqYHkz2Dm3LPjSSf7aoeT@d
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     logger.info("Veritabanına bağlantı kuruldu.")
-    return conn
-
-def initialize_database():
-    conn = get_db_connection()
+    # Veritabanı tablosu oluşturma
     with conn.cursor() as cur:
         cur.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -56,7 +53,7 @@ def initialize_database():
             )
         ''')
     conn.commit()
-    conn.close()
+    return conn
 
 def update_user_data(telegram_id, score, erw_tokens, level):
     conn = get_db_connection()
@@ -87,6 +84,7 @@ async def start(update: Update, context):
         user_id = update.effective_user.id
         logger.info(f"Kullanıcı ID: {user_id}")
         user = get_user_data(user_id)
+        logger.info(f"Kullanıcı verileri: {user}")
 
         if not user:
             update_user_data(user_id, 0, 0, 1)
@@ -105,7 +103,7 @@ async def stats(update: Update, context):
         user = get_user_data(user_id)
 
         if user:
-            message = f"📊 İstatistikleriniz:\n\nPuan: {user[2]}\nERW Token: {user[3]}\nSeviye: {user[4]}"
+            message = f"📊 İstatistikleriniz:\n\nPuan: {user['score']}\nERW Token: {user['erw_tokens']}\nSeviye: {user['level']}"
         else:
             message = "Henüz oyun oynamadınız. /start komutunu kullanarak oyuna başlayabilirsiniz."
 
@@ -186,9 +184,9 @@ def get_user_data_route(user_id):
     user = get_user_data(user_id)
     if user:
         return jsonify({
-            "score": user[2],
-            "erw_tokens": user[3],
-            "level": user[4]
+            "score": user['score'],
+            "erw_tokens": user['erw_tokens'],
+            "level": user['level']
         }), 200
     else:
         return jsonify({"status": "error", "message": "Kullanıcı bulunamadı"}), 404
@@ -198,7 +196,6 @@ def run_flask():
     app.run(host='0.0.0.0', port=5003)
 
 async def main():
-    initialize_database()
     await setup_bot()
 
     flask_thread = threading.Thread(target=run_flask)
@@ -216,6 +213,21 @@ async def main():
         await stop_bot()
 
 if __name__ == '__main__':
+    # Veritabanı tablosu oluşturma - Bu bölüm artık gerekli değil.
+    # conn = get_db_connection()
+    # with conn.cursor() as cur:
+    #     cur.execute('''
+    #         CREATE TABLE IF NOT EXISTS users (
+    #             id SERIAL PRIMARY KEY,
+    #             telegram_id INTEGER UNIQUE,
+    #             score INTEGER DEFAULT 0,
+    #             erw_tokens INTEGER DEFAULT 0,
+    #             level INTEGER DEFAULT 1
+    #         )
+    #     ''')
+    # conn.commit()
+    # conn.close()
+
     def signal_handler(sig, frame):
         global should_stop
         should_stop = True
