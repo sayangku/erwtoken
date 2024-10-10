@@ -133,7 +133,7 @@ def update_score():
     erw_tokens = data.get('erw_tokens')
     level = data.get('level')
 
-    if user_id and score is not None and erw_tokens is not None and level is not None:
+    if user_id is not None and score is not None and erw_tokens is not None and level is not None:
         update_user_data(user_id, score, erw_tokens, level)
         return jsonify({"status": "success"}), 200
     else:
