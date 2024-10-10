@@ -13,7 +13,7 @@ import signal
 nest_asyncio.apply()
 
 # Flask uygulaması
-app = Flask(__name__, static_folder=None)  # static_folder'ı None olarak ayarlayın
+app = Flask(__name__, static_folder='static') 
 
 # Telegram API kimlik bilgileri
 API_ID = '29454561'
@@ -118,9 +118,7 @@ async def stop_bot():
 # Flask route'ları
 @app.route('/')
 def index():
-    with open('index.html', 'r') as f: # index.html dosyasını açın
-        html_content = f.read()
-    return html_content # HTML içeriğini döndürün
+    return app.send_static_file('index.html')  # 'index.html' dosyasını sunar
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -190,6 +188,10 @@ if __name__ == '__main__':
         print("\nKapatma sinyali alındı. Lütfen bekleyin...")
 
     signal.signal(signal.SIGINT, signal_handler)
+
+    # `static` klasörünü oluştur
+    if not os.path.exists('static'):
+        os.makedirs('static')
 
     # Ana programı başlat
     asyncio.run(main())
