@@ -7,178 +7,154 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #e0f7fa;
             text-align: center;
+            background-color: #f0f8ff;
             padding: 20px;
         }
         h1 {
-            color: #00796b;
+            color: #2e8b57;
         }
-        .tree-container {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
+        #trees {
+            font-size: 48px;
+            margin: 20px 0;
         }
         .tree {
-            font-size: 50px;
             cursor: pointer;
-            transition: transform 0.2s;
-            user-select: none;
+            margin: 0 10px;
         }
-        .tree:hover {
-            transform: scale(1.2);
-        }
-        .stats {
-            margin: 20px auto;
-            padding: 15px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 300px;
-        }
-        .button {
-            background-color: #00796b;
-            color: white;
-            padding: 10px 20px;
+        button {
+            background-color: #4CAF50;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        #message {
             margin-top: 20px;
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #004d40;
-        }
-        .message {
-            margin-top: 10px;
             padding: 10px;
             border-radius: 5px;
             display: none;
         }
         .success {
-            background-color: #c8e6c9;
-            color: #2e7d32;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         .error {
-            background-color: #ffcdd2;
-            color: #c62828;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
     <h1>🌍 EcoReward Orman Oyunu 🌍</h1>
     <p>Ağaçları tıklayarak puan kazanın!</p>
-
-    <div class="tree-container">
-        <div class="tree" id="tree1">🌳</div>
-        <div class="tree" id="tree2">🌲</div>
-        <div class="tree" id="tree3">🌴</div>
+    <div id="trees">
+        <span class="tree" onclick="clickTree()">🌳</span>
+        <span class="tree" onclick="clickTree()">🌲</span>
+        <span class="tree" onclick="clickTree()">🌴</span>
     </div>
-
-    <div class="stats">
-        <p>Puanınız: <span id="score">0</span></p>
-        <p>ERW Tokenlarınız: <span id="erw_tokens">0</span></p>
-        <p>Seviyeniz: <span id="level">1</span></p>
-    </div>
-
-    <button class="button" id="save-button">Kaydet</button>
-    <div id="message" class="message"></div>
+    <p>Puanınız: <span id="score">0</span></p>
+    <p>ERW Tokenlarınız: <span id="tokens">0</span></p>
+    <p>Seviyeniz: <span id="level">1</span></p>
+    <button onclick="saveProgress()">Kaydet</button>
+    <div id="message"></div>
 
     <script>
-        // Oyun değişkenleri
-        let score = 0;
-        let erwTokens = 0;
-        let level = 1;
-        const userId = new URLSearchParams(window.location.search).get('user_id');
+        let userId, score = 0, tokens = 0, level = 1;
 
-        // DOM elementleri
-        const scoreElement = document.getElementById('score');
-        const erwTokensElement = document.getElementById('erw_tokens');
-        const levelElement = document.getElementById('level');
-        const messageElement = document.getElementById('message');
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            userId = urlParams.get('user_id');
+            console.log("Kullanıcı ID:", userId);
+            if (userId) {
+                loadUserData();
+            } else {
+                showMessage("Kullanıcı ID bulunamadı. Lütfen Telegram botundan oyunu başlatın.", "error");
+            }
+        };
 
-        // Mesaj gösterme fonksiyonu
-        function showMessage(text, isError = false) {
-            messageElement.textContent = text;
-            messageElement.className = `message ${isError ? 'error' : 'success'}`;
-            messageElement.style.display = 'block';
-            setTimeout(() => {
-                messageElement.style.display = 'none';
-            }, 3000);
+        function clickTree() {
+            score++;
+            updateDisplay();
         }
 
-        // Ağaç tıklama olayları
-        document.querySelectorAll('.tree').forEach(tree => {
-            tree.addEventListener('click', () => {
-                score += Math.floor(Math.random() * 10) + 1;
-                erwTokens = Math.floor(score / 10);
-                level = Math.floor(erwTokens / 10) + 1;
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('tokens').textContent = tokens;
+            document.getElementById('level').textContent = level;
+        }
 
-                scoreElement.textContent = score;
-                erwTokensElement.textContent = erwTokens;
-                levelElement.textContent = level;
-            });
-        });
-
-        // Kaydetme işlemi
-        document.getElementById('save-button').addEventListener('click', async () => {
+        function saveProgress() {
             if (!userId) {
-                showMessage('Kullanıcı ID bulunamadı!', true);
+                showMessage("Kullanıcı ID bulunamadı. Kaydetme işlemi yapılamıyor.", "error");
                 return;
             }
 
-            try {
-                const response = await fetch('/update_score', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: parseInt(userId),
-                        score: score,
-                        erw_tokens: erwTokens,
-                        level: level
-                    })
-                });
-
-                if (response.ok) {
-                    showMessage('Puanlar başarıyla kaydedildi!');
-                } else {
-                    const error = await response.json();
-                    showMessage(error.message || 'Bir hata oluştu!', true);
+            fetch('/update_score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    score: score,
+                    erw_tokens: tokens,
+                    level: level
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Sunucu yanıt vermedi');
                 }
-            } catch (error) {
-                showMessage('Sunucu ile bağlantı kurulamadı!', true);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Başarı:', data);
+                showMessage("İlerlemeniz başarıyla kaydedildi!", "success");
+            })
+            .catch((error) => {
                 console.error('Hata:', error);
-            }
-        });
-
-        // Sayfa yüklendiğinde mevcut verileri getir
-        async function loadUserData() {
-            if (!userId) return;
-
-            try {
-                const response = await fetch(`/get_user_data/${userId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    score = data.score;
-                    erwTokens = data.erw_tokens;
-                    level = data.level;
-
-                    scoreElement.textContent = score;
-                    erwTokensElement.textContent = erwTokens;
-                    levelElement.textContent = level;
-                }
-            } catch (error) {
-                console.error('Veri yükleme hatası:', error);
-            }
+                showMessage("Kaydetme sırasında bir hata oluştu. Lütfen tekrar deneyin.", "error");
+            });
         }
 
-        // Sayfa yüklendiğinde verileri yükle
-        loadUserData();
+        function loadUserData() {
+            fetch(`/get_user_data/${userId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Kullanıcı verileri alınamadı');
+                }
+                return response.json();
+            })
+            .then(data => {
+                score = data.score;
+                tokens = data.erw_tokens;
+                level = data.level;
+                updateDisplay();
+                showMessage("Verileriniz başarıyla yüklendi!", "success");
+            })
+            .catch((error) => {
+                console.error('Kullanıcı verileri yüklenirken hata:', error);
+                showMessage("Verileriniz yüklenirken bir hata oluştu. Yeniden başlatmayı deneyin.", "error");
+            });
+        }
+
+        function showMessage(text, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = text;
+            messageElement.className = type;
+            messageElement.style.display = 'block';
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html>
