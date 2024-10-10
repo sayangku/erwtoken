@@ -1,5 +1,5 @@
 import os
-import sqlite3
+import psycopg2
 from telegram.ext import Application, CommandHandler
 from telegram.constants import ParseMode
 from telegram import Update
@@ -34,34 +34,31 @@ PROJECT_URL = "https://erwtoken.onrender.com"
 application = None
 should_stop = False
 
+# Veritabanı bağlantı bilgileri (Render'dan alınacak)
+DATABASE_URL = "postgresql://veritabani2_user:zjXJo4MqrVDpqYHkz2Dm3LPjSSf7aoeT@dpg-cs3sn13qf0us73dv3if0-a.oregon-postgres.render.com/veritabani2" 
+
 # Veritabanı fonksiyonları
 def get_db_connection():
-    db_path = os.path.join(os.path.dirname(__file__), 'ecoreward.db')
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
-
-def create_database():
-    conn = get_db_connection()
-    conn.execute('''CREATE TABLE IF NOT EXISTS users
-                    (id INTEGER PRIMARY KEY,
-                     telegram_id INTEGER UNIQUE,
-                     score INTEGER DEFAULT 0,
-                     erw_tokens INTEGER DEFAULT 0,
-                     level INTEGER DEFAULT 1)''')
-    conn.commit()
-    conn.close()
 
 def update_user_data(telegram_id, score, erw_tokens, level):
     conn = get_db_connection()
-    conn.execute('''INSERT OR REPLACE INTO users (telegram_id, score, erw_tokens, level)
-                    VALUES (?, ?, ?, ?)''', (telegram_id, score, erw_tokens, level))
+    with conn.cursor() as cur:
+        cur.execute('''
+            INSERT INTO users (telegram_id, score, erw_tokens, level) 
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (telegram_id) DO UPDATE 
+            SET score = EXCLUDED.score, erw_tokens = EXCLUDED.erw_tokens, level = EXCLUDED.level
+        ''', (telegram_id, score, erw_tokens, level))
     conn.commit()
     conn.close()
 
 def get_user_data(telegram_id):
     conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE telegram_id = ?', (telegram_id,)).fetchone()
+    with conn.cursor() as cur:
+        cur.execute('SELECT * FROM users WHERE telegram_id = %s', (telegram_id,))
+        user = cur.fetchone()
     conn.close()
     return user
 
@@ -193,7 +190,20 @@ async def main():
         await stop_bot()
 
 if __name__ == '__main__':
-    create_database()
+    # Veritabanı tablosu oluşturma
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                telegram_id INTEGER UNIQUE,
+                score INTEGER DEFAULT 0,
+                erw_tokens INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1
+            )
+        ''')
+    conn.commit()
+    conn.close()
 
     def signal_handler(sig, frame):
         global should_stop
