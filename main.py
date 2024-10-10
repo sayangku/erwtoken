@@ -13,12 +13,12 @@ import signal
 nest_asyncio.apply()
 
 # Flask uygulaması
-app = Flask(__name__, static_folder='static') 
+app = Flask(__name__, static_folder='static')
 
 # Telegram API kimlik bilgileri
-API_ID = '29454561'
-API_HASH = '8c3719453c1f1751608459d2d42c5d66'
-TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
+API_ID = '29454561'  # API ID'nizi buraya girin
+API_HASH = '8c3719453c1f1751608459d2d42c5d66'  # API Hash'inizi buraya girin
+TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'  # Bot token'inizi buraya girin
 
 # Proje URL'si (Render'ın URL'si)
 PROJECT_URL = "https://erwtoken.onrender.com"
@@ -118,13 +118,23 @@ async def stop_bot():
 # Flask route'ları
 @app.route('/')
 def index():
-    return app.send_static_file('index.html')  # 'index.html' dosyasını sunar
+    return app.send_static_file('index.html')
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     update = request.get_json()
     print(update)  # Gelen veriyi konsola yazdır
-    return jsonify({"status": "ok"}), 200
+
+    # Gelen mesajı işleyin
+    message = update.get('message', {}).get('text')
+    if message:
+        # Örnek olarak, kullanıcının "/start" komutunu işleyin
+        if message == "/start":
+            # Kullanıcıyı index.html sayfanıza yönlendirin
+            game_url = f"{PROJECT_URL}/"  # Webhook'a yönlendirin
+            return jsonify({"message": f"Oyunu oynamak için şu bağlantıya tıklayın: {game_url}"}), 200 
+
+    return jsonify({"status": "ok"}), 200 
 
 @app.route('/update_score', methods=['POST'])
 def update_score():
