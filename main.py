@@ -1,3 +1,5 @@
+main.py'nin Güncellenmiş Kodu:
+
 import os
 import psycopg2
 from telegram.ext import Application, CommandHandler
@@ -41,6 +43,18 @@ DATABASE_URL = "postgresql://veritabani2_user:zjXJo4MqrVDpqYHkz2Dm3LPjSSf7aoeT@d
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     logger.info("Veritabanına bağlantı kuruldu.")
+    # Veritabanı tablosu oluşturma
+    with conn.cursor() as cur:
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                telegram_id INTEGER UNIQUE,
+                score INTEGER DEFAULT 0,
+                erw_tokens INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1
+            )
+        ''')
+    conn.commit()
     return conn
 
 def update_user_data(telegram_id, score, erw_tokens, level):
@@ -201,20 +215,20 @@ async def main():
         await stop_bot()
 
 if __name__ == '__main__':
-    # Veritabanı tablosu oluşturma
-    conn = get_db_connection()
-    with conn.cursor() as cur:
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                telegram_id INTEGER UNIQUE,
-                score INTEGER DEFAULT 0,
-                erw_tokens INTEGER DEFAULT 0,
-                level INTEGER DEFAULT 1
-            )
-        ''')
-    conn.commit()
-    conn.close()
+    # Veritabanı tablosu oluşturma - Bu bölüm artık gerekli değil.
+    # conn = get_db_connection()
+    # with conn.cursor() as cur:
+    #     cur.execute('''
+    #         CREATE TABLE IF NOT EXISTS users (
+    #             id SERIAL PRIMARY KEY,
+    #             telegram_id INTEGER UNIQUE,
+    #             score INTEGER DEFAULT 0,
+    #             erw_tokens INTEGER DEFAULT 0,
+    #             level INTEGER DEFAULT 1
+    #         )
+    #     ''')
+    # conn.commit()
+    # conn.close()
 
     def signal_handler(sig, frame):
         global should_stop
