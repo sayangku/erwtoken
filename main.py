@@ -123,7 +123,7 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     update = request.get_json()
-    print(update)  # Gelen veriyi konsola yazdır
+    print(f"Webhook isteği alındı: {update}")  # Gelen veriyi konsola yazdır
 
     # Gelen mesajı işleyin
     message = update.get('message', {}).get('text')
@@ -132,6 +132,7 @@ def webhook():
         if message == "/start":
             # Kullanıcıyı index.html sayfanıza yönlendirin
             game_url = f"{PROJECT_URL}/"  # Webhook'a yönlendirin
+            print(f"Kullanıcıya yönlendirme URL'si: {game_url}") 
             return jsonify({"message": f"Oyunu oynamak için şu bağlantıya tıklayın: {game_url}"}), 200 
 
     return jsonify({"status": "ok"}), 200 
