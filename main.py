@@ -2,10 +2,9 @@ import os
 import sqlite3
 from telegram import Update, Bot
 from telegram.constants import ParseMode
+from telegram.ext import Dispatcher
 from flask import Flask, request, jsonify, send_from_directory
 import json
-import asyncio
-from functools import wraps
 
 # Flask uygulaması
 app = Flask(__name__)
@@ -13,6 +12,7 @@ app = Flask(__name__)
 # Telegram Bot token
 TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
 bot = Bot(token=TOKEN)
+dispatcher = Dispatcher(bot=bot, update_queue=None, use_context=False)
 
 # Proje URL'si
 PROJECT_URL = "https://erwtoken.onrender.com"
@@ -48,15 +48,8 @@ def get_user_data(telegram_id):
     conn.close()
     return user
 
-# Asenkron fonksiyonları senkron olarak çalıştırmak için yardımcı fonksiyon
-def run_async(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return asyncio.run(func(*args, **kwargs))
-    return wrapper
-
 # Bot komut işleyicileri
-async def handle_start(update: Update):
+def handle_start(update: Update):
     try:
         user_id = update.message.from_user.id
         user = get_user_data(user_id)
@@ -66,14 +59,14 @@ async def handle_start(update: Update):
 
         game_url = f"{PROJECT_URL}/?user_id={user_id}"
         message = f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\nOyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
-        await bot.send_message(chat_id=user_id, text=message, parse_mode=ParseMode.HTML)
+        bot.send_message(chat_id=user_id, text=message, parse_mode=ParseMode.HTML)
         print(f"Start komutu başarıyla işlendi. User ID: {user_id}")
         return True
     except Exception as e:
         print(f"Start komutunda hata: {str(e)}")
         return False
 
-async def handle_stats(update: Update):
+def handle_stats(update: Update):
     try:
         user_id = update.message.from_user.id
         user = get_user_data(user_id)
@@ -83,7 +76,7 @@ async def handle_stats(update: Update):
         else:
             message = "Henüz oyun oynamadınız. /start komutunu kullanarak oyuna başlayabilirsiniz."
 
-        await bot.send_message(chat_id=user_id, text=message)
+        bot.send_message(chat_id=user_id, text=message)
         print(f"Stats komutu başarıyla işlendi. User ID: {user_id}")
         return True
     except Exception as e:
@@ -101,7 +94,7 @@ def serve_index():
         return "Sayfa yüklenirken bir hata oluştu", 500
 
 @app.route(f'/{TOKEN}', methods=['POST'])
-async def webhook():
+def webhook():
     try:
         update = Update.de_json(request.get_json(), bot)
         
@@ -111,9 +104,9 @@ async def webhook():
         text = update.message.text
         
         if text == '/start':
-            await handle_start(update)
+            handle_start(update)
         elif text == '/stats':
-            await handle_stats(update)
+            handle_stats(update)
             
         return jsonify({"status": "success"}), 200
     except Exception as e:
@@ -141,5 +134,4 @@ def update_score():
 create_database()
 
 if __name__ == '__main__':
-    # Yerel geliştirme için
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5003)))
