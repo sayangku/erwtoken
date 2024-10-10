@@ -153,11 +153,15 @@ def update_score():
     erw_tokens = data.get('erw_tokens')
     level = data.get('level')
 
-    if user_id is not None and score is not None and erw_tokens is not None and level is not None:
-        update_user_data(user_id, score, erw_tokens, level)
-        return jsonify({"status": "success"}), 200
-    else:
-        return jsonify({"status": "error", "message": "Geçersiz veri"}), 400
+    try:
+        if user_id is not None and score is not None and erw_tokens is not None and level is not None:
+            update_user_data(user_id, score, erw_tokens, level)
+            return jsonify({"status": "success"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Geçersiz veri"}), 400
+    except Exception as e:
+        logger.error(f"update_score fonksiyonunda hata: {e}")
+        return jsonify({"status": "error", "message": "Sunucuda bir hata oluştu"}), 500
 
 @app.route('/get_user_data/<int:user_id>')
 def get_user_data_route(user_id):
