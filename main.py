@@ -144,7 +144,7 @@ def webhook():
 
 @app.route('/update_score', methods=['POST'])
 def update_score():
-    data = request.json
+    data = request.get_json()
     user_id = data.get('user_id')
     score = data.get('score')
     erw_tokens = data.get('erw_tokens')
