@@ -21,7 +21,7 @@ API_HASH = '8c3719453c1f1751608459d2d42c5d66'
 TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
 
 # Proje URL'si
-PROJECT_URL = "https://sayangku.github.io/erwtoken/"
+PROJECT_URL = "https://erwtoken.onrender.com"
 
 # Global değişkenler
 application = None
