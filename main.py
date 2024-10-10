@@ -1,31 +1,21 @@
 import os
 import sqlite3
-from telegram.ext import Application, CommandHandler
+from telegram import Update, Bot
 from telegram.constants import ParseMode
-from telegram import Update
 from flask import Flask, request, jsonify, send_from_directory
-import threading
+import json
 import asyncio
-import nest_asyncio
-import signal
+from functools import wraps
 
-# nest_asyncio'yu etkinleştir
-nest_asyncio.apply()
-
-# Flask uygulaması - static_folder'ı düzgün şekilde ayarla
+# Flask uygulaması
 app = Flask(__name__)
 
-# Telegram API kimlik bilgileri
-API_ID = '29454561'
-API_HASH = '8c3719453c1f1751608459d2d42c5d66'
+# Telegram Bot token
 TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
+bot = Bot(token=TOKEN)
 
 # Proje URL'si
 PROJECT_URL = "https://erwtoken.onrender.com"
-
-# Global değişkenler
-application = None
-should_stop = False
 
 # Veritabanı fonksiyonları
 def get_db_connection():
@@ -58,10 +48,17 @@ def get_user_data(telegram_id):
     conn.close()
     return user
 
-# Bot komutları
-async def start(update: Update, context):
+# Asenkron fonksiyonları senkron olarak çalıştırmak için yardımcı fonksiyon
+def run_async(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
+    return wrapper
+
+# Bot komut işleyicileri
+async def handle_start(update: Update):
     try:
-        user_id = update.effective_user.id
+        user_id = update.message.from_user.id
         user = get_user_data(user_id)
 
         if not user:
@@ -69,15 +66,16 @@ async def start(update: Update, context):
 
         game_url = f"{PROJECT_URL}/?user_id={user_id}"
         message = f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\nOyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
-        await update.message.reply_text(message, parse_mode=ParseMode.HTML)
+        await bot.send_message(chat_id=user_id, text=message, parse_mode=ParseMode.HTML)
         print(f"Start komutu başarıyla işlendi. User ID: {user_id}")
+        return True
     except Exception as e:
         print(f"Start komutunda hata: {str(e)}")
-        await update.message.reply_text("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
+        return False
 
-async def stats(update: Update, context):
+async def handle_stats(update: Update):
     try:
-        user_id = update.effective_user.id
+        user_id = update.message.from_user.id
         user = get_user_data(user_id)
 
         if user:
@@ -85,11 +83,12 @@ async def stats(update: Update, context):
         else:
             message = "Henüz oyun oynamadınız. /start komutunu kullanarak oyuna başlayabilirsiniz."
 
-        await update.message.reply_text(message)
+        await bot.send_message(chat_id=user_id, text=message)
         print(f"Stats komutu başarıyla işlendi. User ID: {user_id}")
+        return True
     except Exception as e:
         print(f"Stats komutunda hata: {str(e)}")
-        await update.message.reply_text("İstatistikler alınırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
+        return False
 
 # Flask route'ları
 @app.route('/')
@@ -100,6 +99,26 @@ def serve_index():
     except Exception as e:
         print(f"Index servis hatası: {str(e)}")
         return "Sayfa yüklenirken bir hata oluştu", 500
+
+@app.route(f'/{TOKEN}', methods=['POST'])
+async def webhook():
+    try:
+        update = Update.de_json(request.get_json(), bot)
+        
+        if not update or not update.message:
+            return jsonify({"status": "error", "message": "Invalid update"}), 400
+
+        text = update.message.text
+        
+        if text == '/start':
+            await handle_start(update)
+        elif text == '/stats':
+            await handle_stats(update)
+            
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Webhook hatası: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/update_score', methods=['POST'])
 def update_score():
@@ -118,41 +137,9 @@ def update_score():
         print(f"Update score hatası: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-def run_flask():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5003)))
-
-async def main():
-    global application
-    
-    # Veritabanını oluştur
-    create_database()
-    
-    # Bot'u başlat
-    application = Application.builder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("stats", stats))
-    
-    await application.initialize()
-    await application.start()
-    
-    # Flask'ı ayrı bir thread'de başlat
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-    
-    print("Bot ve Flask uygulaması başlatıldı!")
-    
-    try:
-        while not should_stop:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        print("\nUygulama kapatılıyor...")
-    finally:
-        await application.stop()
+# Veritabanını oluştur
+create_database()
 
 if __name__ == '__main__':
-    # Ctrl+C ile düzgün kapatma
-    signal.signal(signal.SIGINT, lambda s, f: setattr(__builtins__, 'should_stop', True))
-    
-    # Ana programı başlat
-    asyncio.run(main())
+    # Yerel geliştirme için
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5003)))
