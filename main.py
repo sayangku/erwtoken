@@ -3,7 +3,7 @@ import sqlite3
 from telegram.ext import Application, CommandHandler
 from telegram.constants import ParseMode
 from telegram import Update
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import threading
 import asyncio
 import nest_asyncio
@@ -13,7 +13,7 @@ import signal
 nest_asyncio.apply()
 
 # Flask uygulaması
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
 
 # Telegram API kimlik bilgileri
 API_ID = '29454561'
@@ -117,7 +117,7 @@ async def stop_bot():
 # Flask route'ları
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return app.send_static_file('index.html')
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
