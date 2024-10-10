@@ -1,6 +1,7 @@
 flask
 flask-cors
 gunicorn
+psycopg2-binary
 python-telegram-bot
 requests
 nest_asyncio
