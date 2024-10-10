@@ -131,7 +131,8 @@ def webhook():
         # Örnek olarak, kullanıcının "/start" komutunu işleyin
         if message == "/start":
             # Kullanıcıyı index.html sayfanıza yönlendirin
-            game_url = f"{PROJECT_URL}/"  # Webhook'a yönlendirin
+            user_id = update.get('message', {}).get('from', {}).get('id')
+            game_url = f"{PROJECT_URL}/?user_id={user_id}"  # Webhook'a yönlendirin
             print(f"Kullanıcıya yönlendirme URL'si: {game_url}") 
             return jsonify({"message": f"Oyunu oynamak için şu bağlantıya tıklayın: {game_url}"}), 200 
 
