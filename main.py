@@ -109,6 +109,9 @@ async def setup_bot():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("stats", stats))
 
+    # Webhook'u ayarlama
+    await application.set_webhook(url="https://erwtoken.onrender.com/webhook") 
+
     await application.initialize()
     await application.start()
 
