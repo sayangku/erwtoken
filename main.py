@@ -11,231 +11,91 @@ import nest_asyncio
 import signal
 import logging
 
-# Loglama konfigürasyonu
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Diğer importlar ve konfigürasyonlar aynı kalacak...
 
-# nest_asyncio'yu etkinleştir
-nest_asyncio.apply()
-
-# Flask uygulaması
-app = Flask(__name__, static_folder='static')
-CORS(app)
-
-# Telegram API kimlik bilgileri
-API_ID = '29454561'
-API_HASH = '8c3719453c1f1751608459d2d42c5d66'
-TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
-
-# Proje URL'si (Render'ın URL'si)
-PROJECT_URL = "https://erwtoken.onrender.com"
-
-# Global değişkenler
-application = None
-should_stop = False
-
-# Veritabanı bağlantı bilgileri (Render'dan alınacak)
-DATABASE_URL = "postgresql://veritabani2_user:zjXJo4MqrVDpqYHkz2Dm3LPjSSf7aoeT@dpg-cs3sn13qf0us73dv3if0-a.oregon-postgres.render.com/veritabani2" 
-
-# Veritabanı fonksiyonları
 def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL)
-    logger.info("Veritabanına bağlantı kuruldu.")
-    # Veritabanı tablosu oluşturma
-    with conn.cursor() as cur:
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                telegram_id INTEGER UNIQUE,
-                score INTEGER DEFAULT 0,
-                erw_tokens INTEGER DEFAULT 0,
-                level INTEGER DEFAULT 1
-            )
-        ''')
-    conn.commit()
-    return conn
-
-def update_user_data(telegram_id, score, erw_tokens, level):
-    conn = get_db_connection()
-    with conn.cursor() as cur:
-        cur.execute('''
-            INSERT INTO users (telegram_id, score, erw_tokens, level) 
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (telegram_id) DO UPDATE 
-            SET score = EXCLUDED.score, erw_tokens = EXCLUDED.erw_tokens, level = EXCLUDED.level
-        ''', (telegram_id, score, erw_tokens, level))
-    conn.commit()
-    conn.close()
-    logger.info(f"Kullanıcı verileri güncellendi: telegram_id={telegram_id}, score={score}, erw_tokens={erw_tokens}, level={level}")
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.autocommit = True  # Otomatik commit ekledik
+        logger.info("Veritabanına bağlantı kuruldu.")
+        return conn
+    except Exception as e:
+        logger.error(f"Veritabanı bağlantısında hata: {e}")
+        raise
 
 def get_user_data(telegram_id):
-    conn = get_db_connection()
-    with conn.cursor() as cur:
-        cur.execute('SELECT * FROM users WHERE telegram_id = %s', (telegram_id,))
-        user = cur.fetchone()
-    conn.close()
-    logger.info(f"Kullanıcı verileri alındı: telegram_id={telegram_id}, veriler={user}")
-    return user
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT id, telegram_id, score, erw_tokens, level 
+                FROM users 
+                WHERE telegram_id = %s
+            ''', (telegram_id,))
+            user = cur.fetchone()
+            if user:
+                # Tuple'ı sözlüğe çeviriyoruz
+                return {
+                    'id': user[0],
+                    'telegram_id': user[1],
+                    'score': user[2],
+                    'erw_tokens': user[3],
+                    'level': user[4]
+                }
+            return None
+    except Exception as e:
+        logger.error(f"Kullanıcı verisi alınırken hata: {e}")
+        return None
+    finally:
+        conn.close()
 
-# Bot komutları
+def update_user_data(telegram_id, score, erw_tokens, level):
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute('''
+                INSERT INTO users (telegram_id, score, erw_tokens, level) 
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (telegram_id) DO UPDATE 
+                SET score = EXCLUDED.score, 
+                    erw_tokens = EXCLUDED.erw_tokens, 
+                    level = EXCLUDED.level
+                RETURNING id, telegram_id, score, erw_tokens, level
+            ''', (telegram_id, score, erw_tokens, level))
+            updated_user = cur.fetchone()
+            conn.commit()
+            logger.info(f"Kullanıcı verileri güncellendi: {updated_user}")
+    except Exception as e:
+        logger.error(f"Kullanıcı verisi güncellenirken hata: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+# Start komutunu güncelleyelim
 async def start(update: Update, context):
     logger.info("Start komutu alındı!")
     try:
         user_id = update.effective_user.id
         logger.info(f"Kullanıcı ID: {user_id}")
+        
+        # Önce kullanıcıyı kontrol edelim
         user = get_user_data(user_id)
         logger.info(f"Kullanıcı verileri: {user}")
 
         if not user:
+            # Kullanıcı yoksa yeni kayıt oluştur
             update_user_data(user_id, 0, 0, 1)
+            logger.info(f"Yeni kullanıcı oluşturuldu: {user_id}")
 
         game_url = f"{PROJECT_URL}/?user_id={user_id}"
         logger.info(f"Oluşturulan oyun URL'si: {game_url}")
-        message = f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\nOyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
+        
+        message = (
+            f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\n"
+            f"Oyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
+        )
+        
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
     except Exception as e:
         logger.error(f"Start komutunda hata oluştu: {e}")
         await update.message.reply_text("Üzgünüm, bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
-
-async def stats(update: Update, context):
-    try:
-        user_id = update.effective_user.id
-        user = get_user_data(user_id)
-
-        if user:
-            message = f"📊 İstatistikleriniz:\n\nPuan: {user['score']}\nERW Token: {user['erw_tokens']}\nSeviye: {user['level']}"
-        else:
-            message = "Henüz oyun oynamadınız. /start komutunu kullanarak oyuna başlayabilirsiniz."
-
-        await update.message.reply_text(message)
-    except Exception as e:
-        logger.error(f"Stats komutunda hata oluştu: {e}")
-
-# Bot yönetimi
-async def setup_bot():
-    global application
-
-    application = (
-        Application.builder()
-        .token(TOKEN)
-        .build()
-    )
-
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("stats", stats))
-
-    # Webhook'u ayarlama
-    await application.set_webhook(url="https://erwtoken.onrender.com/webhook") 
-
-    await application.initialize()
-    await application.start()
-
-    logger.info("Bot başarıyla başlatıldı!")
-
-    return application
-
-async def stop_bot():
-    global application
-    if application:
-        await application.stop()
-        logger.info("Bot durduruldu!")
-
-# Flask route'ları
-@app.route('/')
-def index():
-    return send_from_directory('static', 'index.html')
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    update = request.get_json()
-    logger.info(f"Webhook isteği alındı: {update}")
-
-    message = update.get('message', {}).get('text')
-    if message:
-        if message == "/start":
-            user_id = update.get('message', {}).get('from', {}).get('id')
-            game_url = f"{PROJECT_URL}/?user_id={user_id}"
-            logger.info(f"Kullanıcıya yönlendirme URL'si: {game_url}")
-            return jsonify({"message": f"Oyunu oynamak için şu bağlantıya tıklayın: {game_url}"}), 200 
-
-    return jsonify({"status": "ok"}), 200 
-
-@app.route('/update_score', methods=['POST'])
-def update_score():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    score = data.get('score')
-    erw_tokens = data.get('erw_tokens')
-    level = data.get('level')
-
-    try:
-        if user_id is not None and score is not None and erw_tokens is not None and level is not None:
-            update_user_data(user_id, score, erw_tokens, level)
-            return jsonify({"status": "success"}), 200
-        else:
-            return jsonify({"status": "error", "message": "Geçersiz veri"}), 400
-    except Exception as e:
-        logger.error(f"update_score fonksiyonunda hata: {e}")
-        return jsonify({"status": "error", "message": "Sunucuda bir hata oluştu"}), 500
-
-@app.route('/get_user_data/<int:user_id>')
-def get_user_data_route(user_id):
-    logger.info(f"Kullanıcı verileri istendi: user_id={user_id}")
-    user = get_user_data(user_id)
-    if user:
-        return jsonify({
-            "score": user['score'],
-            "erw_tokens": user['erw_tokens'],
-            "level": user['level']
-        }), 200
-    else:
-        return jsonify({"status": "error", "message": "Kullanıcı bulunamadı"}), 404
-
-# Ana program
-def run_flask():
-    app.run(host='0.0.0.0', port=5003)
-
-async def main():
-    await setup_bot()
-
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-
-    logger.info("Flask uygulaması ayrı bir thread'de başlatıldı.")
-
-    try:
-        while not should_stop:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        logger.info("\nUygulama kapatılıyor...")
-    finally:
-        await stop_bot()
-
-if __name__ == '__main__':
-    # Veritabanı tablosu oluşturma - Bu bölüm artık gerekli değil.
-    # conn = get_db_connection()
-    # with conn.cursor() as cur:
-    #     cur.execute('''
-    #         CREATE TABLE IF NOT EXISTS users (
-    #             id SERIAL PRIMARY KEY,
-    #             telegram_id INTEGER UNIQUE,
-    #             score INTEGER DEFAULT 0,
-    #             erw_tokens INTEGER DEFAULT 0,
-    #             level INTEGER DEFAULT 1
-    #         )
-    #     ''')
-    # conn.commit()
-    # conn.close()
-
-    def signal_handler(sig, frame):
-        global should_stop
-        should_stop = True
-        logger.info("\nKapatma sinyali alındı. Lütfen bekleyin...")
-
-    signal.signal(signal.SIGINT, signal_handler)
-
-    if not os.path.exists('static'):
-        os.makedirs('static')
-
-    asyncio.run(main())
