@@ -40,6 +40,7 @@ DATABASE_URL = "postgresql://veritabani2_user:zjXJo4MqrVDpqYHkz2Dm3LPjSSf7aoeT@d
 # Veritabanı fonksiyonları
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
+    logger.info("Veritabanına bağlantı kuruldu.")
     return conn
 
 def update_user_data(telegram_id, score, erw_tokens, level):
@@ -53,6 +54,7 @@ def update_user_data(telegram_id, score, erw_tokens, level):
         ''', (telegram_id, score, erw_tokens, level))
     conn.commit()
     conn.close()
+    logger.info(f"Kullanıcı verileri güncellendi: telegram_id={telegram_id}, score={score}, erw_tokens={erw_tokens}, level={level}")
 
 def get_user_data(telegram_id):
     conn = get_db_connection()
@@ -60,6 +62,7 @@ def get_user_data(telegram_id):
         cur.execute('SELECT * FROM users WHERE telegram_id = %s', (telegram_id,))
         user = cur.fetchone()
     conn.close()
+    logger.info(f"Kullanıcı verileri alındı: telegram_id={telegram_id}, veriler={user}")
     return user
 
 # Bot komutları
@@ -165,6 +168,7 @@ def update_score():
 
 @app.route('/get_user_data/<int:user_id>')
 def get_user_data_route(user_id):
+    logger.info(f"Kullanıcı verileri istendi: user_id={user_id}")
     user = get_user_data(user_id)
     if user:
         return jsonify({
