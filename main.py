@@ -13,14 +13,14 @@ import signal
 nest_asyncio.apply()
 
 # Flask uygulaması
-app = Flask(__name__, static_folder='.')
+app = Flask(__name__, static_folder=None)  # static_folder'ı None olarak ayarlayın
 
 # Telegram API kimlik bilgileri
 API_ID = '29454561'
 API_HASH = '8c3719453c1f1751608459d2d42c5d66'
 TOKEN = '6977513645:AAHXgoaBI8mWIdbvT-udEY1M6rvLGSGuQNc'
 
-# Proje URL'si
+# Proje URL'si (Render'ın URL'si)
 PROJECT_URL = "https://erwtoken.onrender.com"
 
 # Global değişkenler
@@ -68,6 +68,7 @@ async def start(update: Update, context):
         if not user:
             update_user_data(user_id, 0, 0, 1)
 
+        # Kullanıcıyı index.html'ye yönlendir
         game_url = f"{PROJECT_URL}/?user_id={user_id}"
         message = f"🌍 EcoReward Orman Oyunu'na hoş geldiniz! 🌍\n\nOyunu oynamak için aşağıdaki bağlantıya tıklayın:\n{game_url}"
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
@@ -117,7 +118,9 @@ async def stop_bot():
 # Flask route'ları
 @app.route('/')
 def index():
-    return app.send_static_file('index.html')
+    with open('index.html', 'r') as f: # index.html dosyasını açın
+        html_content = f.read()
+    return html_content # HTML içeriğini döndürün
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
