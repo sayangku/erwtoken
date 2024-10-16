@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> 
+    <title>SoundCloud Web Görünümü</title>
+    <style>
+        html, body { 
+            height: 100%;
+            margin: 0;
+        
+        }
+        .background { 
+            background-size: cover; 
+            background-repeat: no-repeat; 
+            
+            transition: background-image 9s ease-in-out; 
+            position: fixed;  
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; 
+            background-color: #000; /* Görseller yüklenmeden önce siyah bir arka plan göster */
+            background-position: center; /* Arka planı ortalar */
+            background-attachment: fixed; /* Arka plan kaydırma sırasında sabit kalır */
+        }
+    
+        
+        body { 
+            min-height: 100vh; 
+            display: flex; /* Flexbox'ı etkinleştiriyoruz */
+            flex-direction: column; /* İçeriği dikey olarak hizalıyoruz */
+            align-items: center; /* İçeriği yatay olarak ortalamak için */
+        }
+        
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 450px; 
+            overflow: hidden;
+            margin-top: 20px; /* SoundCloud oynatıcısını başlıktan biraz ayırıyoruz */
+            margin-bottom: 50px; /* Alt bordürle arasına boşluk ekliyoruz */
+        }
+        
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5); 
+        }
+        
+        h1 { 
+            font-family: 'Indie Flower', cursive; 
+            font-weight: bold; 
+            color: white; 
+            text-align: center; 
+            margin-top: 20px; /* Başlığın üst marjını ayarlayın */
+            font-size: 3em; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            width: 100%; /* Başlığı tam genişliğe yayıyoruz */
+        }
+
+        .logo {
+            width: 150px; /* Logonun genişliğini ayarlayın */
+            margin-top: 50px; /* Logoyu başlıktan ayırın */
+        }
+
+        @media (max-width: 768px) { 
+            h1 {
+                font-size: 2em;
+            }
+            .iframe-container {
+                height: 350px; 
+                margin-bottom: 30px; /* Küçük ekranlarda boşluk ayarlayın */
+            }
+            .logo {
+                width: 100px; /* Küçük ekranlarda logonun genişliğini ayarlayın */
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">    
+</head>
+<body>
+    <div class="background"></div>  
+    
+    <div class="logo">
+        <img src="images/logo.png" alt="Logo"> 
+    </div>
+    <h1> PLAYLIST</h1> 
+    <div class="iframe-container">
+        <iframe 
+            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1888803638&color=%230066CC&auto_play=false&buying=false&sharing=false&download=false&show_artwork=true&show_playcount=true&show_user=false&hide_related=true&show_comments=false&show_reposts=false&show_teaser=false" 
+            frameborder="0" 
+            allowfullscreen
+        >
+        </iframe>
+    </div>
+
+    <script>
+        const images = [
+            "images/back1.jpg", 
+            "images/back2.jpg", 
+            "images/back3.jpg",
+            "images/back4.jpg"  
+        ];
+        let loadedImages = 0;
+        let currentImageIndex = 0;
+        const backgroundElement = document.querySelector('.background'); 
+
+        function startTransitions() {
+            setInterval(changeBackgroundImage, 6000); // 6 saniye aralık
+        }
+
+        function changeBackgroundImage() {
+            backgroundElement.style.backgroundImage = `url(${images[currentImageIndex]})`; 
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+        }
+
+        images.forEach(image => {
+            const img = new Image();
+            img.onload = () => {
+                loadedImages++;
+                if (loadedImages === images.length) {
+                    startTransitions();
+                    changeBackgroundImage(); 
+                }
+            };
+            img.src = image;
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (loadedImages === images.length) {
+                startTransitions();
+                changeBackgroundImage(); 
+            }
+        });
+    </script>    
+</body>
+</html>
