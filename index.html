@@ -35,7 +35,7 @@
             height: 450px; 
             overflow: hidden;
             margin-top: 20px;
-            margin-bottom: 50px;
+            margin-bottom: 160px; /* Increased to make room for the button */
         }
         .iframe-container iframe {
             position: absolute;
@@ -83,15 +83,25 @@
             }
             .iframe-container {
                 height: 350px; 
-                margin-bottom: 30px;
+                margin-bottom: 140px; /* Adjusted for mobile */
             }
             .logo {
                 width: 100px;
             }
             #albums_buton {
-                width: 140px;
-                height: 140px;
+                width: 120px;
+                height: 120px;
                 bottom: 10px;
+            }
+        }
+        @media (max-height: 700px) {
+            .iframe-container {
+                height: 300px;
+                margin-bottom: 140px;
+            }
+            #albums_buton {
+                width: 100px;
+                height: 100px;
             }
         }
     </style>
