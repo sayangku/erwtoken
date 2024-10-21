@@ -26,7 +26,6 @@
             flex-grow: 1;
             padding: 10px;
             font-size: 16px;
-            width: 100%;
             box-sizing: border-box;
         }
         button {
@@ -50,6 +49,7 @@
             padding: 10px;
             border-radius: 5px;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
         }
@@ -67,10 +67,10 @@
             border: none;
             padding: 5px 10px;
             cursor: pointer;
+            margin-left: 5px;
         }
         .editBtn {
             background-color: #ffa500;
-            margin-right: 10px;
         }
         .editBtn:hover {
             background-color: #ff8c00;
@@ -92,7 +92,8 @@
                 align-items: flex-start;
             }
             .deleteBtn, .editBtn {
-                align-self: flex-end;
+                width: 100%;
+                margin-top: 5px;
             }
         }
 
