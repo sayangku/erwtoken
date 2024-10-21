@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Music Collection</title>
     <style>
         body {
@@ -223,8 +223,12 @@
         }
 
         function playVideo(link) {
-            const videoId = link.split('v=')[1].split('&')[0]; // YouTube video ID'sini al
-            videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+            if (link.includes('v=')) {
+                const videoId = link.split('v=')[1].split('&')[0]; // YouTube video ID'sini al
+                videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                alert('Geçersiz YouTube linki');
+            }
         }
 
         function saveLink(name, link) {
