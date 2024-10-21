@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> 
     <title>SoundCloud Web Görünümü</title>
@@ -9,12 +8,10 @@
         html, body { 
             height: 100%;
             margin: 0;
-        
         }
         .background { 
             background-size: cover; 
             background-repeat: no-repeat; 
-            
             transition: background-image 9s ease-in-out; 
             position: fixed;  
             top: 0;
@@ -22,28 +19,24 @@
             width: 100%;
             height: 100%;
             z-index: -1; 
-            background-color: #000; /* Görseller yüklenmeden önce siyah bir arka plan göster */
-            background-position: center; /* Arka planı ortalar */
-            background-attachment: fixed; /* Arka plan kaydırma sırasında sabit kalır */
+            background-color: #000;
+            background-position: center;
+            background-attachment: fixed;
         }
-    
-        
         body { 
             min-height: 100vh; 
-            display: flex; /* Flexbox'ı etkinleştiriyoruz */
-            flex-direction: column; /* İçeriği dikey olarak hizalıyoruz */
-            align-items: center; /* İçeriği yatay olarak ortalamak için */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
         .iframe-container {
             position: relative;
             width: 100%;
             height: 450px; 
             overflow: hidden;
-            margin-top: 20px; /* SoundCloud oynatıcısını başlıktan biraz ayırıyoruz */
-            margin-bottom: 50px; /* Alt bordürle arasına boşluk ekliyoruz */
+            margin-top: 20px;
+            margin-bottom: 50px;
         }
-        
         .iframe-container iframe {
             position: absolute;
             top: 0;
@@ -52,33 +45,53 @@
             height: 100%;
             background-color: rgba(255, 255, 255, 0.5); 
         }
-        
         h1 { 
             font-family: 'Indie Flower', cursive; 
             font-weight: bold; 
             color: white; 
             text-align: center; 
-            margin-top: 20px; /* Başlığın üst marjını ayarlayın */
+            margin-top: 20px;
             font-size: 3em; 
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            width: 100%; /* Başlığı tam genişliğe yayıyoruz */
+            width: 100%;
         }
-
         .logo {
-            width: 150px; /* Logonun genişliğini ayarlayın */
-            margin-top: 50px; /* Logoyu başlıktan ayırın */
+            width: 150px;
+            margin-top: 50px;
         }
-
+        #albums_buton {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            background-image: url('images/albums_buton.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            background-color: transparent;
+            padding: 0;
+            outline: none;
+        }
         @media (max-width: 768px) { 
             h1 {
                 font-size: 2em;
             }
             .iframe-container {
                 height: 350px; 
-                margin-bottom: 30px; /* Küçük ekranlarda boşluk ayarlayın */
+                margin-bottom: 30px;
             }
             .logo {
-                width: 100px; /* Küçük ekranlarda logonun genişliğini ayarlayın */
+                width: 100px;
+            }
+            #albums_buton {
+                width: 80px;
+                height: 80px;
+                bottom: 10px;
+                left: 10px;
             }
         }
     </style>
@@ -102,6 +115,8 @@
         </iframe>
     </div>
 
+    <button id="albums_buton" onclick="window.location.href='index2.html'"></button>
+
     <script>
         const images = [
             "images/back1.jpg", 
@@ -114,7 +129,7 @@
         const backgroundElement = document.querySelector('.background'); 
 
         function startTransitions() {
-            setInterval(changeBackgroundImage, 6000); // 6 saniye aralık
+            setInterval(changeBackgroundImage, 6000);
         }
 
         function changeBackgroundImage() {
