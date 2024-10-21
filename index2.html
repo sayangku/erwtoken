@@ -16,7 +16,7 @@
             text-align: center;
         }
         p {
-            font-family: 'Georgia', serif; /* Using a different font for the description */
+            font-family: 'Georgia', serif;
             font-size: 18px;
             color: #555;
             text-align: center;
@@ -86,6 +86,22 @@
             background-color: #d32f2f;
         }
 
+        /* Video widget alanı */
+        #videoPlayer {
+            width: 100%;
+            height: 360px;
+            margin-top: 20px;
+            background-color: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #videoPlayer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             input {
@@ -102,6 +118,9 @@
                 width: 100%;
                 margin-top: 5px;
             }
+            #videoPlayer {
+                height: 240px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -113,6 +132,9 @@
             }
             input, button {
                 font-size: 14px;
+            }
+            #videoPlayer {
+                height: 200px;
             }
         }
     </style>
@@ -131,16 +153,20 @@
         <input type="url" id="linkInput" placeholder="YouTube video link" required>
         <button type="submit">Add</button>
     </form>
+    
     <ul id="linkList"></ul>
+
+    <!-- Video oynatıcı alanı -->
+    <div id="videoPlayer"></div>
 
     <script>
         const form = document.getElementById('linkForm');
         const nameInput = document.getElementById('nameInput');
         const linkInput = document.getElementById('linkInput');
         const list = document.getElementById('linkList');
+        const videoPlayer = document.getElementById('videoPlayer');
         let editIndex = null; // Düzenlenen öğeyi izlemek için
 
-        // Sayfa yüklendiğinde kaydedilmiş linkleri göster
         document.addEventListener('DOMContentLoaded', () => {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
@@ -152,16 +178,14 @@
             const link = linkInput.value.trim();
             if (name && link) {
                 if (editIndex === null) {
-                    // Yeni bir link ekle
                     addLinkToList(name, link);
                     saveLink(name, link);
                 } else {
-                    // Varolan linki düzenle
                     updateLink(editIndex, name, link);
                 }
                 nameInput.value = '';
                 linkInput.value = '';
-                editIndex = null; // Düzenleme işlemi bitti
+                editIndex = null;
             }
         });
 
@@ -170,7 +194,10 @@
             const a = document.createElement('a');
             a.href = link;
             a.textContent = name;
-            a.target = '_blank';
+            a.onclick = function(e) {
+                e.preventDefault();
+                playVideo(link); // Linke tıklayınca videoyu oynat
+            };
 
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Edit';
@@ -178,7 +205,7 @@
             editBtn.onclick = function() {
                 nameInput.value = name;
                 linkInput.value = link;
-                editIndex = Array.from(list.children).indexOf(li); // Düzenlenecek öğeyi bul
+                editIndex = Array.from(list.children).indexOf(li);
             };
 
             const deleteBtn = document.createElement('button');
@@ -195,6 +222,11 @@
             list.appendChild(li);
         }
 
+        function playVideo(link) {
+            const videoId = link.split('v=')[1].split('&')[0]; // YouTube video ID'sini al
+            videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+        }
+
         function saveLink(name, link) {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
             savedLinks.push({name, link});
@@ -203,10 +235,8 @@
 
         function updateLink(index, name, link) {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
-            savedLinks[index] = {name, link}; // Mevcut öğeyi güncelle
+            savedLinks[index] = {name, link};
             localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
-
-            // Listeyi yeniden oluştur
             list.innerHTML = '';
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
         }
