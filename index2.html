@@ -15,6 +15,13 @@
             color: #333;
             text-align: center;
         }
+        p {
+            font-family: 'Georgia', serif; /* Using a different font for the description */
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         #linkForm {
             margin-bottom: 20px;
             display: flex;
@@ -112,9 +119,16 @@
 </head>
 <body>
     <h1>My Music Collection</h1>
+
+    <p>
+        With this page, you can add your favorite music to your collection and listen to them anytime you want. 
+        All you need to do is add the song's name and its YouTube link! Enjoy your playlist and expand your collection. 
+        You can also edit or delete any music you’ve added whenever you like. Start exploring your music now!
+    </p>
+
     <form id="linkForm">
         <input type="text" id="nameInput" placeholder="Song or video name" required>
-        <input type="url" id="linkInput" placeholder="Example:YouTube video link" required>
+        <input type="url" id="linkInput" placeholder="YouTube video link" required>
         <button type="submit">Add</button>
     </form>
     <ul id="linkList"></ul>
@@ -124,9 +138,9 @@
         const nameInput = document.getElementById('nameInput');
         const linkInput = document.getElementById('linkInput');
         const list = document.getElementById('linkList');
-        let editIndex = null; // To track the item being edited
+        let editIndex = null; // Düzenlenen öğeyi izlemek için
 
-        // Show saved links when the page loads
+        // Sayfa yüklendiğinde kaydedilmiş linkleri göster
         document.addEventListener('DOMContentLoaded', () => {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
@@ -138,16 +152,16 @@
             const link = linkInput.value.trim();
             if (name && link) {
                 if (editIndex === null) {
-                    // Add a new link
+                    // Yeni bir link ekle
                     addLinkToList(name, link);
                     saveLink(name, link);
                 } else {
-                    // Edit an existing link
+                    // Varolan linki düzenle
                     updateLink(editIndex, name, link);
                 }
                 nameInput.value = '';
                 linkInput.value = '';
-                editIndex = null; // Editing process done
+                editIndex = null; // Düzenleme işlemi bitti
             }
         });
 
@@ -164,7 +178,7 @@
             editBtn.onclick = function() {
                 nameInput.value = name;
                 linkInput.value = link;
-                editIndex = Array.from(list.children).indexOf(li); // Find the item being edited
+                editIndex = Array.from(list.children).indexOf(li); // Düzenlenecek öğeyi bul
             };
 
             const deleteBtn = document.createElement('button');
@@ -189,10 +203,10 @@
 
         function updateLink(index, name, link) {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
-            savedLinks[index] = {name, link}; // Update the existing item
+            savedLinks[index] = {name, link}; // Mevcut öğeyi güncelle
             localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
 
-            // Rebuild the list
+            // Listeyi yeniden oluştur
             list.innerHTML = '';
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
         }
