@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müzik Koleksiyonum</title>
+    <title>My Music Collection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -111,11 +111,11 @@
     </style>
 </head>
 <body>
-    <h1>Müzik Koleksiyonum</h1>
+    <h1>My Music Collection</h1>
     <form id="linkForm">
-        <input type="text" id="nameInput" placeholder="Şarkı veya video adı" required>
-        <input type="url" id="linkInput" placeholder="YouTube video linki" required>
-        <button type="submit">Ekle</button>
+        <input type="text" id="nameInput" placeholder="Song or video name" required>
+        <input type="url" id="linkInput" placeholder="YouTube video link" required>
+        <button type="submit">Add</button>
     </form>
     <ul id="linkList"></ul>
 
@@ -124,9 +124,9 @@
         const nameInput = document.getElementById('nameInput');
         const linkInput = document.getElementById('linkInput');
         const list = document.getElementById('linkList');
-        let editIndex = null; // Düzenlenen öğeyi izlemek için
+        let editIndex = null; // To track the item being edited
 
-        // Sayfa yüklendiğinde kaydedilmiş linkleri göster
+        // Show saved links when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
@@ -138,16 +138,16 @@
             const link = linkInput.value.trim();
             if (name && link) {
                 if (editIndex === null) {
-                    // Yeni bir link ekle
+                    // Add a new link
                     addLinkToList(name, link);
                     saveLink(name, link);
                 } else {
-                    // Varolan linki düzenle
+                    // Edit an existing link
                     updateLink(editIndex, name, link);
                 }
                 nameInput.value = '';
                 linkInput.value = '';
-                editIndex = null; // Düzenleme işlemi bitti
+                editIndex = null; // Editing process done
             }
         });
 
@@ -159,16 +159,16 @@
             a.target = '_blank';
 
             const editBtn = document.createElement('button');
-            editBtn.textContent = 'Düzenle';
+            editBtn.textContent = 'Edit';
             editBtn.className = 'editBtn';
             editBtn.onclick = function() {
                 nameInput.value = name;
                 linkInput.value = link;
-                editIndex = Array.from(list.children).indexOf(li); // Düzenlenecek öğeyi bul
+                editIndex = Array.from(list.children).indexOf(li); // Find the item being edited
             };
 
             const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Sil';
+            deleteBtn.textContent = 'Delete';
             deleteBtn.className = 'deleteBtn';
             deleteBtn.onclick = function() {
                 li.remove();
@@ -189,10 +189,10 @@
 
         function updateLink(index, name, link) {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
-            savedLinks[index] = {name, link}; // Mevcut öğeyi güncelle
+            savedLinks[index] = {name, link}; // Update the existing item
             localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
 
-            // Listeyi yeniden oluştur
+            // Rebuild the list
             list.innerHTML = '';
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
         }
