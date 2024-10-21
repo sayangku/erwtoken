@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Music Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #uploadForm {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        input[type="file"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #audioPlayer {
+            width: 100%;
+            margin-top: 20px;
+        }
+        #playlist {
+            list-style-type: none;
+            padding: 0;
+        }
+        #playlist li {
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        #playlist li.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+        .deleteBtn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .deleteBtn:hover {
+            background-color: #d32f2f;
+        }
+        #errorMessage {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Music Collection</h1>
+
+    <p>
+        With this page, you can add your own music files to your collection and listen to them anytime you want, even when your device's screen is off. 
+        All you need to do is upload your music files! Enjoy your playlist and expand your collection. 
+        You can also delete any music you've added whenever you like. Your playlist will be saved even if you refresh the page. Start exploring your music now!
+    </p>
+
+    <form id="uploadForm">
+        <input type="file" id="audioFileInput" accept="audio/*" multiple>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="errorMessage"></div>
+
+    <audio id="audioPlayer" controls></audio>
+    
+    <ul id="playlist"></ul>
+
+    <script>
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playlist = document.getElementById('playlist');
+        const uploadForm = document.getElementById('uploadForm');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        let db;
+        let songs = [];
+
+        // Open IndexedDB
+        const dbPromise = indexedDB.open('MusicPlayerDB', 1);
+
+        dbPromise.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('songs')) {
+                db.createObjectStore('songs', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        dbPromise.onsuccess = function(event) {
+            db = event.target.result;
+            loadPlaylist();
+        };
+
+        dbPromise.onerror = function(event) {
+            console.error('IndexedDB error:', event.target.error);
+        };
+
+        function loadPlaylist() {
+            const transaction = db.transaction(['songs'], 'readonly');
+            const objectStore = transaction.objectStore('songs');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                songs = event.target.result;
+                updatePlaylist();
+            };
+        }
+
+        function saveSong(song) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['songs'], 'readwrite');
+                const objectStore = transaction.objectStore('songs');
+                const request = objectStore.add(song);
+
+                request.onsuccess = function(event) {
+                    resolve(event.target.result);
+                };
+
+                request.onerror = function(event) {
+                    reject('Error saving song: ' + event.target.error);
+                };
+            });
+        }
+
+        function deleteSongFromDB(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['songs'], 'readwrite');
+                const objectStore = transaction.objectStore('songs');
+                const request = objectStore.delete(id);
+
+                request.onsuccess = function(event) {
+                    resolve();
+                };
+
+                request.onerror = function(event) {
+                    reject('Error deleting song: ' + event.target.error);
+                };
+            });
+        }
+
+        function updatePlaylist() {
+            playlist.innerHTML = '';
+            songs.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.textContent = song.name;
+                li.onclick = () => playSong(index);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'deleteBtn';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteSong(index);
+                };
+                
+                li.appendChild(deleteBtn);
+                playlist.appendChild(li);
+            });
+        }
+
+        function playSong(index) {
+            const song = songs[index];
+            audioPlayer.src = URL.createObjectURL(song.file);
+            audioPlayer.play();
+            document.querySelectorAll('#playlist li').forEach((li, i) => {
+                li.classList.toggle('active', i === index);
+            });
+        }
+
+        async function deleteSong(index) {
+            const songId = songs[index].id;
+            await deleteSongFromDB(songId);
+            songs.splice(index, 1);
+            updatePlaylist();
+            if (songs.length === 0) {
+                audioPlayer.src = '';
+            }
+        }
+
+        uploadForm.onsubmit = async (e) => {
+            e.preventDefault();
+            errorMessage.textContent = '';
+            
+            for (const file of audioFileInput.files) {
+                if (file.type.startsWith('audio/')) {
+                    try {
+                        const song = { name: file.name, file: file };
+                        const id = await saveSong(song);
+                        song.id = id;
+                        songs.push(song);
+                    } catch (error) {
+                        console.error('Error saving song:', error);
+                        errorMessage.textContent = `Error saving ${file.name}: ${error}`;
+                    }
+                } else {
+                    errorMessage.textContent = `File "${file.name}" is not a valid audio file.`;
+                }
+            }
+
+            updatePlaylist();
+            audioFileInput.value = ''; // Clear the file input
+        };
+
+        audioPlayer.onended = () => {
+            const currentIndex = songs.findIndex(song => audioPlayer.src.endsWith(song.name));
+            const nextIndex = (currentIndex + 1) % songs.length;
+            playSong(nextIndex);
+        };
+    </script>
+</body>
+</html>
