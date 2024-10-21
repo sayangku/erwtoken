@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Music Collection</title>
     <style>
         body {
@@ -223,8 +223,18 @@
         }
 
         function playVideo(link) {
-            if (link.includes('v=')) {
-                const videoId = link.split('v=')[1].split('&')[0]; // YouTube video ID'sini al
+            let videoId = null;
+
+            // Eğer link 'youtu.be/' içeriyorsa, videoId'yi bu formattan al
+            if (link.includes('youtu.be/')) {
+                videoId = link.split('youtu.be/')[1].split('?')[0];
+            } 
+            // Eğer link 'v=' içeriyorsa, videoId'yi bu formattan al
+            else if (link.includes('v=')) {
+                videoId = link.split('v=')[1].split('&')[0];
+            }
+
+            if (videoId) {
                 videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
             } else {
                 alert('Geçersiz YouTube linki');
