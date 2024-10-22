@@ -5,12 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Music Collection</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
         }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        #linkForm {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"], input[type="url"] {
+            flex: 1 1 200px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #linkList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #linkList li {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #linkList a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .editBtn, .deleteBtn {
+            padding: 5px 10px;
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+
+        .editBtn {
+            background-color: #2196F3;
+        }
+
+        .deleteBtn {
+            background-color: #f44336;
+        }
+
         .player-container {
             position: fixed;
             bottom: 20px;
@@ -18,34 +103,42 @@
             width: 300px;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 1000;
         }
+
         .player-header {
-            padding: 10px;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .player-title {
             margin: 0;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
+            color: #333;
         }
+
         .minimize-btn {
             background: none;
             border: none;
             cursor: pointer;
             padding: 5px;
+            font-size: 18px;
+            color: #333;
         }
+
         .player-content {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
         }
+
         .player-content iframe {
             position: absolute;
             top: 0;
@@ -54,10 +147,27 @@
             height: 100%;
             border: none;
         }
+
         .minimized .player-content {
             display: none;
         }
-        /* Diğer mevcut stiller... */
+
+        @media (max-width: 600px) {
+            .player-container {
+                width: 100%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+
+            #linkForm {
+                flex-direction: column;
+            }
+
+            input[type="text"], input[type="url"] {
+                flex: 1 1 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -89,21 +199,9 @@
         let currentVideoId = null;
 
         function extractVideoId(url) {
-            try {
-                let videoId = null;
-                if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
-                } else if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url).search);
-                    videoId = urlParams.get('v');
-                } else if (url.includes('youtube.com/embed/')) {
-                    videoId = url.split('embed/')[1].split(/[?#]/)[0];
-                }
-                return videoId;
-            } catch (error) {
-                console.error('Video ID çıkarma hatası:', error);
-                return null;
-            }
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
 
         function createPlayer(videoId, songName) {
