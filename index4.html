@@ -16,89 +16,131 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            padding: 20px;
+            background: #0f0f0f;
             color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #f0f0f0;
         }
 
         #songList {
             list-style-type: none;
             margin-bottom: 30px;
+            padding: 0;
         }
 
         #songList li {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
             margin-bottom: 10px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 15px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         #songList li:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: translateX(10px);
+        }
+
+        #songList li::before {
+            content: '';
+            position: absolute;
+            left: -50%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+            transform: skewX(30deg);
+        }
+
+        #songList li:hover::before {
+            left: 150%;
         }
 
         #songList li i {
             margin-right: 15px;
+            color: #f39c12;
         }
 
         .player-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #audioPlayer {
             width: 100%;
-            height: 50px;
-            border-radius: 25px;
+            border: none;
+            height: 60px;
+            border-radius: 30px;
+            background: #333;
             outline: none;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease;
         }
 
         #audioPlayer:hover {
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+            background: #555;
         }
 
         #nowPlaying {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.9);
+            color: #f39c12;
+        }
+
+        .custom-button {
+            background: #f39c12;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .custom-button:hover {
+            background: #e67e22;
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 10px;
+                padding: 20px;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             #songList li {
-                padding: 12px 15px;
+                padding: 10px;
             }
 
             .player-container {
@@ -114,6 +156,10 @@
             #songList li {
                 font-size: 0.9rem;
             }
+
+            #audioPlayer {
+                height: 50px;
+            }
         }
     </style>
 </head>
@@ -125,12 +171,14 @@
             <audio id="audioPlayer" controls></audio>
             <div id="nowPlaying"></div>
         </div>
+        <button class="custom-button" onclick="nextSong()">Next Song</button>
     </div>
 
     <script>
         const songList = document.getElementById('songList');
         const audioPlayer = document.getElementById('audioPlayer');
         const nowPlaying = document.getElementById('nowPlaying');
+        let currentSongIndex = 0;
 
         function getMp3Files() {
             return [
@@ -154,6 +202,7 @@
             audioPlayer.src = `mp3/${song}`;
             audioPlayer.play();
             nowPlaying.innerHTML = `<i class="fas fa-headphones"></i> Now Playing: ${song.replace('.mp3', '')}`;
+            currentSongIndex = getMp3Files().indexOf(song);
             
             // Clear previous active song
             document.querySelectorAll('#songList li').forEach(li => {
@@ -166,6 +215,12 @@
             if (activeSong) {
                 activeSong.style.background = 'rgba(255, 255, 255, 0.3)';
             }
+        }
+
+        function nextSong() {
+            const songs = getMp3Files();
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            playSong(songs[currentSongIndex]);
         }
 
         loadSongs();
