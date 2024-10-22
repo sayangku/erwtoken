@@ -5,97 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Music Collection</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            min-height: 100vh;
+            background-color: #f0f0f0;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 700;
-            font-size: 2.5rem;
-        }
-
-        #linkForm {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        input[type="text"], input[type="url"] {
-            flex: 1 1 200px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1rem;
-            margin: 4px 2px;
-            transition-duration: 0.4s;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #linkList {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #linkList li {
-            background-color: rgba(255, 255, 255, 0.1);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        #linkList a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            flex: 1;
-            margin-right: 10px;
-        }
-
-        .editBtn, .deleteBtn {
-            padding: 5px 10px;
-            margin-left: 5px;
-            font-size: 0.9rem;
-        }
-
-        .editBtn {
-            background-color: #2196F3;
-        }
-
-        .deleteBtn {
-            background-color: #f44336;
-        }
-
         .player-container {
             position: fixed;
             bottom: 20px;
@@ -103,42 +18,34 @@
             width: 300px;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
         }
-
         .player-header {
-            padding: 15px;
+            padding: 10px;
             background: #f8f9fa;
             border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .player-title {
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            color: #333;
         }
-
         .minimize-btn {
             background: none;
             border: none;
             cursor: pointer;
             padding: 5px;
-            font-size: 18px;
-            color: #333;
         }
-
         .player-content {
             position: relative;
-            padding-bottom: 56.25%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
             height: 0;
             overflow: hidden;
         }
-
         .player-content iframe {
             position: absolute;
             top: 0;
@@ -147,27 +54,10 @@
             height: 100%;
             border: none;
         }
-
         .minimized .player-content {
             display: none;
         }
-
-        @media (max-width: 600px) {
-            .player-container {
-                width: 100%;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
-
-            #linkForm {
-                flex-direction: column;
-            }
-
-            input[type="text"], input[type="url"] {
-                flex: 1 1 100%;
-            }
-        }
+        /* Diğer mevcut stiller... */
     </style>
 </head>
 <body>
@@ -192,7 +82,135 @@
     </div>
 
     <script>
-        // Mevcut JavaScript kodu buraya gelecek (değişiklik yok)
+        const playerContainer = document.getElementById('playerContainer');
+        const playerContent = document.getElementById('playerContent');
+        const minimizeBtn = document.getElementById('minimizeBtn');
+        const currentSong = document.getElementById('currentSong');
+        let currentVideoId = null;
+
+        function extractVideoId(url) {
+            try {
+                let videoId = null;
+                if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
+                } else if (url.includes('youtube.com/watch')) {
+                    const urlParams = new URLSearchParams(new URL(url).search);
+                    videoId = urlParams.get('v');
+                } else if (url.includes('youtube.com/embed/')) {
+                    videoId = url.split('embed/')[1].split(/[?#]/)[0];
+                }
+                return videoId;
+            } catch (error) {
+                console.error('Video ID çıkarma hatası:', error);
+                return null;
+            }
+        }
+
+        function createPlayer(videoId, songName) {
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
+            playerContent.innerHTML = `<iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            currentSong.textContent = songName;
+            playerContainer.style.display = 'block';
+            currentVideoId = videoId;
+        }
+
+        minimizeBtn.addEventListener('click', () => {
+            playerContainer.classList.toggle('minimized');
+            minimizeBtn.textContent = playerContainer.classList.contains('minimized') ? '▲' : '▼';
+        });
+
+        function addLinkToList(name, link) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = 'javascript:void(0)';
+            a.textContent = name;
+            a.onclick = function(e) {
+                e.preventDefault();
+                const videoId = extractVideoId(link);
+                if (videoId) {
+                    createPlayer(videoId, name);
+                } else {
+                    alert('Geçersiz YouTube linki');
+                }
+            };
+
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Düzenle';
+            editBtn.className = 'editBtn';
+            editBtn.onclick = function() {
+                nameInput.value = name;
+                linkInput.value = link;
+                editIndex = Array.from(list.children).indexOf(li);
+            };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Sil';
+            deleteBtn.className = 'deleteBtn';
+            deleteBtn.onclick = function() {
+                li.remove();
+                removeLink(name, link);
+            };
+
+            li.appendChild(a);
+            li.appendChild(editBtn);
+            li.appendChild(deleteBtn);
+            list.appendChild(li);
+        }
+
+        const form = document.getElementById('linkForm');
+        const nameInput = document.getElementById('nameInput');
+        const linkInput = document.getElementById('linkInput');
+        const list = document.getElementById('linkList');
+        let editIndex = null;
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+            const link = linkInput.value.trim();
+            
+            if (name && link) {
+                const videoId = extractVideoId(link);
+                if (!videoId) {
+                    alert('Lütfen geçerli bir YouTube linki girin');
+                    return;
+                }
+                
+                if (editIndex === null) {
+                    addLinkToList(name, link);
+                    saveLink(name, link);
+                } else {
+                    updateLink(editIndex, name, link);
+                }
+                nameInput.value = '';
+                linkInput.value = '';
+                editIndex = null;
+            }
+        });
+
+        function saveLink(name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            savedLinks.push({name, link});
+            localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
+        }
+
+        function updateLink(index, name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            savedLinks[index] = {name, link};
+            localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
+            list.innerHTML = '';
+            savedLinks.forEach(item => addLinkToList(item.name, item.link));
+        }
+
+        function removeLink(name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            const updatedLinks = savedLinks.filter(item => item.name !== name || item.link !== link);
+            localStorage.setItem('youtubeLinks', JSON.stringify(updatedLinks));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            savedLinks.forEach(item => addLinkToList(item.name, item.link));
+        });
     </script>
 </body>
 </html>
