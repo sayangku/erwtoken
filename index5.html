@@ -5,116 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Music Collection</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
         body {
-            font-family: 'Poppins', Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
         }
+
         h1 {
             text-align: center;
-            color: #333;
-            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.5rem;
         }
-        form {
+
+        #linkForm {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
         }
+
         input[type="text"], input[type="url"] {
-            width: 80%;
+            flex: 1 1 200px;
             padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
             border: none;
             border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
             cursor: pointer;
-            font-size: 16px;
+            border-radius: 5px;
         }
+
         button:hover {
-            background-color: #218838;
+            background-color: #45a049;
         }
-        ul {
-            list-style: none;
+
+        #linkList {
+            list-style-type: none;
             padding: 0;
-            max-width: 600px;
-            margin: 0 auto;
         }
-        li {
-            background-color: #fff;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
+
+        #linkList li {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
+
+        #linkList a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            flex: 1;
+            margin-right: 10px;
+        }
+
         .editBtn, .deleteBtn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
             padding: 5px 10px;
-            cursor: pointer;
-            margin-left: 10px;
+            margin-left: 5px;
+            font-size: 0.9rem;
         }
-        .editBtn:hover {
-            background-color: #0056b3;
+
+        .editBtn {
+            background-color: #2196F3;
         }
+
         .deleteBtn {
-            background-color: #dc3545;
+            background-color: #f44336;
         }
-        .deleteBtn:hover {
-            background-color: #c82333;
-        }
+
         .player-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 100%;
-            max-width: 400px;
+            width: 300px;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 1000;
-            transition: all 0.3s ease;
         }
+
         .player-header {
-            padding: 10px;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .player-title {
             margin: 0;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             color: #333;
         }
+
         .minimize-btn {
             background: none;
             border: none;
             cursor: pointer;
             padding: 5px;
-            font-size: 20px;
+            font-size: 18px;
+            color: #333;
         }
+
         .player-content {
             position: relative;
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
         }
+
         .player-content iframe {
             position: absolute;
             top: 0;
@@ -123,36 +147,25 @@
             height: 100%;
             border: none;
         }
+
         .minimized .player-content {
             display: none;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            input[type="text"], input[type="url"] {
-                width: 90%;
-            }
-            button {
-                width: 90%;
-                font-size: 14px;
-            }
-            li {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 20px;
-            }
+        @media (max-width: 600px) {
             .player-container {
                 width: 100%;
-                bottom: 0;
+                left: 0;
                 right: 0;
-                border-radius: 0;
+                bottom: 0;
+            }
+
+            #linkForm {
+                flex-direction: column;
+            }
+
+            input[type="text"], input[type="url"] {
+                flex: 1 1 100%;
             }
         }
     </style>
@@ -179,7 +192,7 @@
     </div>
 
     <script>
-        // JavaScript kodları aynen kalacak
+        // Mevcut JavaScript kodu buraya gelecek (değişiklik yok)
     </script>
 </body>
 </html>
