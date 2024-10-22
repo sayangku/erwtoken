@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -174,20 +174,20 @@
     <h1>My Music Collection</h1>
 
     <form id="linkForm">
-        <input type="text" id="nameInput" placeholder="Şarkı adı" required>
-        <input type="url" id="linkInput" placeholder="YouTube video linki" required>
-        <button type="submit">Ekle</button>
+        <input type="text" id="nameInput" placeholder="Song Name" required>
+        <input type="url" id="linkInput" placeholder="YouTube Video Link" required>
+        <button type="submit">Add</button>
     </form>
     
     <ul id="linkList"></ul>
 
     <div id="playerContainer" class="player-container" style="display: none;">
         <div class="player-header">
-            <p class="player-title" id="currentSong">Şarkı Adı</p>
+            <p class="player-title" id="currentSong">Song Name</p>
             <button class="minimize-btn" id="minimizeBtn">▼</button>
         </div>
         <div class="player-content" id="playerContent">
-            <!-- iframe buraya gelecek -->
+            <!-- iframe will be here -->
         </div>
     </div>
 
@@ -228,12 +228,12 @@
                 if (videoId) {
                     createPlayer(videoId, name);
                 } else {
-                    alert('Geçersiz YouTube linki');
+                    alert('Invalid YouTube link');
                 }
             };
 
             const editBtn = document.createElement('button');
-            editBtn.textContent = 'Düzenle';
+            editBtn.textContent = 'Edit';
             editBtn.className = 'editBtn';
             editBtn.onclick = function() {
                 nameInput.value = name;
@@ -242,7 +242,7 @@
             };
 
             const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Sil';
+            deleteBtn.textContent = 'Delete';
             deleteBtn.className = 'deleteBtn';
             deleteBtn.onclick = function() {
                 li.remove();
@@ -269,7 +269,7 @@
             if (name && link) {
                 const videoId = extractVideoId(link);
                 if (!videoId) {
-                    alert('Lütfen geçerli bir YouTube linki girin');
+                    alert('Please enter a valid YouTube link');
                     return;
                 }
                 
