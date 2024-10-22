@@ -115,6 +115,13 @@
             color: #f39c12;
         }
 
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            width: 100%;
+        }
+
         .custom-button {
             background: #f39c12;
             padding: 10px 20px;
@@ -124,6 +131,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background 0.3s ease;
+            width: 48%;
         }
 
         .custom-button:hover {
@@ -145,6 +153,16 @@
 
             .player-container {
                 padding: 15px;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .custom-button {
+                width: 100%;
+                margin-bottom: 10px;
             }
         }
 
@@ -171,7 +189,10 @@
             <audio id="audioPlayer" controls></audio>
             <div id="nowPlaying"></div>
         </div>
-        <button class="custom-button" onclick="nextSong()">Next Song</button>
+        <div class="button-container">
+            <button class="custom-button" onclick="nextSong()">Next Song</button>
+            <button class="custom-button" onclick="goBack()">Back</button>
+        </div>
     </div>
 
     <script>
@@ -221,6 +242,10 @@
             const songs = getMp3Files();
             currentSongIndex = (currentSongIndex + 1) % songs.length;
             playSong(songs[currentSongIndex]);
+        }
+
+        function goBack() {
+            window.location.href = 'index2.html'; // Back button navigates to index2.html
         }
 
         loadSongs();
