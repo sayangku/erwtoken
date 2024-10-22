@@ -310,5 +310,34 @@
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
         });
     </script>
+<button onclick="window.location.href='index2.html'" style="
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 100;
+    @media (max-width: 768px) {
+        top: 10px;
+        right: 10px;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    @media (max-width: 480px) {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+">Back</button>
+    
 </body>
 </html>
