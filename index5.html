@@ -81,11 +81,13 @@
         </div>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const playerContainer = document.getElementById('playerContainer');
         const playerContent = document.getElementById('playerContent');
         const minimizeBtn = document.getElementById('minimizeBtn');
         const currentSong = document.getElementById('currentSong');
+        let player;
         let currentVideoId = null;
 
         function extractVideoId(url) {
@@ -106,12 +108,37 @@
             }
         }
 
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('playerContent', {
+                height: '169',
+                width: '300',
+                videoId: '',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Oynatıcı hazır olduğunda yapılacak işlemler
+        }
+
+        function onPlayerStateChange(event) {
+            // Oynatıcı durumu değiştiğinde yapılacak işlemler
+        }
+
         function createPlayer(videoId, songName) {
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
-            playerContent.innerHTML = `<iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            currentSong.textContent = songName;
-            playerContainer.style.display = 'block';
-            currentVideoId = videoId;
+            if (player) {
+                player.loadVideoById(videoId);
+                currentSong.textContent = songName;
+                playerContainer.style.display = 'block';
+                currentVideoId = videoId;
+            }
         }
 
         minimizeBtn.addEventListener('click', () => {
@@ -210,6 +237,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
+        });
+
+        // Sayfa görünürlüğü değiştiğinde çalışmaya devam et
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                // Sayfa gizlendiğinde oynatmaya devam et
+                player.playVideo();
+            }
         });
     </script>
 </body>
