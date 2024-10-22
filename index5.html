@@ -310,5 +310,46 @@
             savedLinks.forEach(item => addLinkToList(item.name, item.link));
         });
     </script>
+    <script>
+    const playerContainer = document.getElementById('playerContainer');
+    const playerContent = document.getElementById('playerContent');
+    const minimizeBtn = document.getElementById('minimizeBtn');
+    const currentSong = document.getElementById('currentSong');
+    let currentVideoId = null;
+
+    function extractVideoId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function createPlayer(videoId, songName) {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
+        playerContent.innerHTML = `<iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        currentSong.textContent = songName;
+        playerContainer.style.display = 'block';
+        currentVideoId = videoId;
+
+        // Ekranın kapanmasını önlemek için fonksiyonu çağır
+        preventScreenSleep();
+    }
+
+    function preventScreenSleep() {
+        const video = document.querySelector('iframe');
+        if (video) {
+            video.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+    }
+
+    // Ekran kapandığında videoyu durdurmamak için belirli aralıklarla fonksiyonu çağırın
+    setInterval(preventScreenSleep, 10000); // Her 10 saniyede bir kontrol et
+
+    minimizeBtn.addEventListener('click', () => {
+        playerContainer.classList.toggle('minimized');
+        minimizeBtn.textContent = playerContainer.classList.contains('minimized') ? '▲' : '▼';
+    });
+
+    // Diğer mevcut fonksiyonlarınızı buraya eklemeye devam edin...
+</script>
 </body>
 </html>
