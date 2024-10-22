@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +74,11 @@
             height: 50px;
             border-radius: 25px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #audioPlayer:hover {
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
         }
 
         #nowPlaying {
@@ -130,8 +135,8 @@
         function getMp3Files() {
             return [
                 'Eminem - Mockingbird.mp3',
-                'sarki2.mp3',
-                'sarki3.mp3'
+                'song2.mp3',
+                'song3.mp3'
             ];
         }
 
@@ -148,14 +153,14 @@
         function playSong(song) {
             audioPlayer.src = `mp3/${song}`;
             audioPlayer.play();
-            nowPlaying.innerHTML = `<i class="fas fa-headphones"></i> Şu an çalıyor: ${song.replace('.mp3', '')}`;
+            nowPlaying.innerHTML = `<i class="fas fa-headphones"></i> Now Playing: ${song.replace('.mp3', '')}`;
             
-            // Önceki aktif şarkıyı temizle
+            // Clear previous active song
             document.querySelectorAll('#songList li').forEach(li => {
                 li.style.background = 'rgba(255, 255, 255, 0.1)';
             });
             
-            // Çalan şarkıyı vurgula
+            // Highlight the currently playing song
             const activeSong = Array.from(document.querySelectorAll('#songList li'))
                 .find(li => li.textContent === song.replace('.mp3', ''));
             if (activeSong) {
