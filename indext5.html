@@ -5,22 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Music Collection</title>
     <style>
-        /* Önceki tüm stiller aynı kalacak */
-        /* Yeni audio player stilleri */
-        .audio-player {
-            width: 100%;
-            margin-top: 20px;
+        /* Önceki stiller aynı */
+        .video-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 320px;
+            height: 180px;
+            background: #000;
+            z-index: 1000;
+        }
+        
+        .video-container.minimized {
+            width: 1px;
+            height: 1px;
+            opacity: 0.01; /* Tamamen gizlemek yerine minimal görünürlük */
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 190px;
+            right: 10px;
+            background: #fff;
             padding: 10px;
-            background-color: #f8f9fa;
             border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
         }
-        .audio-player audio {
-            width: 100%;
+        
+        .controls button {
+            margin: 0 5px;
         }
-        .now-playing {
-            text-align: center;
-            margin: 10px 0;
-            font-weight: bold;
+
+        /* Medya sorguları için responsive düzenlemeler */
+        @media (max-width: 768px) {
+            .video-container {
+                width: 240px;
+                height: 135px;
+            }
+            
+            .controls {
+                bottom: 145px;
+            }
         }
     </style>
 </head>
@@ -40,22 +66,87 @@
     
     <ul id="linkList"></ul>
 
-    <!-- Audio player bölümü -->
-    <div class="audio-player">
-        <div class="now-playing" id="nowPlaying"></div>
-        <audio id="audioPlayer" controls>
-            Tarayıcınız audio elementini desteklemiyor.
-        </audio>
+    <!-- Video oynatıcı ve kontroller -->
+    <div class="video-container" id="videoContainer">
+        <div id="player"></div>
+    </div>
+    <div class="controls" id="controls">
+        <button id="togglePlayer">Oynatıcıyı Gizle/Göster</button>
+        <button id="togglePlayPause">Duraklat/Oynat</button>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        let player;
+        let isPlayerReady = false;
+        let currentVideoId = '';
+
+        // YouTube API'si hazır olduğunda çağrılacak fonksiyon
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'autoplay': 0,
+                    'controls': 1,
+                    'enablejsapi': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            isPlayerReady = true;
+        }
+
+        function onPlayerStateChange(event) {
+            // Player durumunu kontrol et ve gerekirse buton metnini güncelle
+            updatePlayPauseButton();
+        }
+
+        // Form ve liste işlemleri
         const form = document.getElementById('linkForm');
         const nameInput = document.getElementById('nameInput');
         const linkInput = document.getElementById('linkInput');
         const list = document.getElementById('linkList');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const nowPlaying = document.getElementById('nowPlaying');
+        const videoContainer = document.getElementById('videoContainer');
+        const togglePlayer = document.getElementById('togglePlayer');
+        const togglePlayPause = document.getElementById('togglePlayPause');
         let editIndex = null;
+
+        // Oynatıcıyı gizle/göster
+        togglePlayer.addEventListener('click', () => {
+            videoContainer.classList.toggle('minimized');
+            if (videoContainer.classList.contains('minimized')) {
+                togglePlayer.textContent = 'Oynatıcıyı Göster';
+            } else {
+                togglePlayer.textContent = 'Oynatıcıyı Gizle';
+            }
+        });
+
+        // Oynat/Duraklat
+        togglePlayPause.addEventListener('click', () => {
+            if (isPlayerReady && player) {
+                const state = player.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+            }
+        });
+
+        function updatePlayPauseButton() {
+            if (isPlayerReady && player) {
+                const state = player.getPlayerState();
+                togglePlayPause.textContent = state === YT.PlayerState.PLAYING ? 'Duraklat' : 'Oynat';
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
@@ -86,7 +177,7 @@
             a.textContent = name;
             a.onclick = function(e) {
                 e.preventDefault();
-                playAudio(name, link);
+                playVideo(link);
             };
 
             const editBtn = document.createElement('button');
@@ -112,21 +203,16 @@
             list.appendChild(li);
         }
 
-        async function playAudio(name, link) {
-            try {
-                const videoId = extractVideoId(link);
-                if (!videoId) {
-                    throw new Error('Geçersiz YouTube linki');
+        function playVideo(link) {
+            const videoId = extractVideoId(link);
+            if (videoId && isPlayerReady) {
+                if (currentVideoId !== videoId) {
+                    player.loadVideoById(videoId);
+                    currentVideoId = videoId;
+                } else {
+                    player.playVideo();
                 }
-
-                // YouTube video ID'sini audio stream URL'sine dönüştür
-                const audioUrl = `https://youtube-proxy.your-domain.com/audio/${videoId}`;
-                
-                audioPlayer.src = audioUrl;
-                audioPlayer.play();
-                nowPlaying.textContent = `Şu an çalıyor: ${name}`;
-            } catch (error) {
-                alert('Müzik oynatılamıyor: ' + error.message);
+                videoContainer.classList.remove('minimized');
             }
         }
 
@@ -140,7 +226,25 @@
             return videoId;
         }
 
-        // Diğer fonksiyonlar aynı kalacak (saveLink, updateLink, removeLink)
+        function saveLink(name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            savedLinks.push({name, link});
+            localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
+        }
+
+        function updateLink(index, name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            savedLinks[index] = {name, link};
+            localStorage.setItem('youtubeLinks', JSON.stringify(savedLinks));
+            list.innerHTML = '';
+            savedLinks.forEach(item => addLinkToList(item.name, item.link));
+        }
+
+        function removeLink(name, link) {
+            const savedLinks = JSON.parse(localStorage.getItem('youtubeLinks')) || [];
+            const updatedLinks = savedLinks.filter(item => item.name !== name || item.link !== link);
+            localStorage.setItem('youtubeLinks', JSON.stringify(updatedLinks));
+        }
     </script>
 </body>
 </html>
