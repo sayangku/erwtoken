@@ -4,72 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M Player Host</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             padding: 20px;
-            background-color: #f0f0f0;
+            color: white;
         }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         h1 {
-            color: #333;
             text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        p {
-            font-family: 'Georgia', serif;
-            font-size: 18px;
-            color: #555;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+
         #songList {
             list-style-type: none;
-            padding: 0;
+            margin-bottom: 30px;
         }
+
         #songList li {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
         }
+
         #songList li:hover {
-            background-color: #e0e0e0;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(10px);
         }
+
+        #songList li i {
+            margin-right: 15px;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
         #audioPlayer {
             width: 100%;
-            margin-top: 20px;
+            height: 50px;
+            border-radius: 25px;
+            outline: none;
         }
+
         #nowPlaying {
             text-align: center;
-            font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            #songList li {
+                padding: 12px 15px;
+            }
+
+            .player-container {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            #songList li {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>M Player Host</h1>
-
-   
-
-    <ul id="songList"></ul>
-
-    <audio id="audioPlayer" controls></audio>
-    <div id="nowPlaying"></div>
+    <div class="container">
+        <h1>M Player Host</h1>
+        <ul id="songList"></ul>
+        <div class="player-container">
+            <audio id="audioPlayer" controls></audio>
+            <div id="nowPlaying"></div>
+        </div>
+    </div>
 
     <script>
         const songList = document.getElementById('songList');
         const audioPlayer = document.getElementById('audioPlayer');
         const nowPlaying = document.getElementById('nowPlaying');
 
-        // Bu fonksiyon normalde sunucu tarafında çalışır ve mp3 klasöründeki dosyaları listeler
-        // Ancak bu örnekte statik bir liste kullanacağız
         function getMp3Files() {
             return [
                 'Eminem - Mockingbird.mp3',
                 'sarki2.mp3',
                 'sarki3.mp3'
-                // Diğer mp3 dosyalarını buraya ekleyin
             ];
         }
 
@@ -77,7 +139,7 @@
             const songs = getMp3Files();
             songs.forEach(song => {
                 const li = document.createElement('li');
-                li.textContent = song.replace('.mp3', '');
+                li.innerHTML = `<i class="fas fa-music"></i>${song.replace('.mp3', '')}`;
                 li.onclick = () => playSong(song);
                 songList.appendChild(li);
             });
@@ -86,7 +148,19 @@
         function playSong(song) {
             audioPlayer.src = `mp3/${song}`;
             audioPlayer.play();
-            nowPlaying.textContent = `Şu an çalıyor: ${song.replace('.mp3', '')}`;
+            nowPlaying.innerHTML = `<i class="fas fa-headphones"></i> Şu an çalıyor: ${song.replace('.mp3', '')}`;
+            
+            // Önceki aktif şarkıyı temizle
+            document.querySelectorAll('#songList li').forEach(li => {
+                li.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+            
+            // Çalan şarkıyı vurgula
+            const activeSong = Array.from(document.querySelectorAll('#songList li'))
+                .find(li => li.textContent === song.replace('.mp3', ''));
+            if (activeSong) {
+                activeSong.style.background = 'rgba(255, 255, 255, 0.3)';
+            }
         }
 
         loadSongs();
