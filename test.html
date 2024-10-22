@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müzik Koleksiyonum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #songList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #songList li {
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #songList li:hover {
+            background-color: #e0e0e0;
+        }
+        #audioPlayer {
+            width: 100%;
+            margin-top: 20px;
+        }
+        #nowPlaying {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Müzik Koleksiyonum</h1>
+
+    <p>
+        Bu sayfada, mp3 klasöründeki telifsiz şarkıları dinleyebilirsiniz. 
+        Listeden bir şarkı seçin ve müziğin keyfini çıkarın!
+    </p>
+
+    <ul id="songList"></ul>
+
+    <audio id="audioPlayer" controls></audio>
+    <div id="nowPlaying"></div>
+
+    <script>
+        const songList = document.getElementById('songList');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const nowPlaying = document.getElementById('nowPlaying');
+
+        // Bu fonksiyon normalde sunucu tarafında çalışır ve mp3 klasöründeki dosyaları listeler
+        // Ancak bu örnekte statik bir liste kullanacağız
+        function getMp3Files() {
+            return [
+                'Eminem - Mockingbird',
+                'sarki2.mp3',
+                'sarki3.mp3'
+                // Diğer mp3 dosyalarını buraya ekleyin
+            ];
+        }
+
+        function loadSongs() {
+            const songs = getMp3Files();
+            songs.forEach(song => {
+                const li = document.createElement('li');
+                li.textContent = song.replace('.mp3', '');
+                li.onclick = () => playSong(song);
+                songList.appendChild(li);
+            });
+        }
+
+        function playSong(song) {
+            audioPlayer.src = `mp3/${song}`;
+            audioPlayer.play();
+            nowPlaying.textContent = `Şu an çalıyor: ${song.replace('.mp3', '')}`;
+        }
+
+        loadSongs();
+    </script>
+</body>
+</html>
