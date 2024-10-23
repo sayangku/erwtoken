@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M Radio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('images/back4.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    main {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #ffcc00;
+      text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #controls button {
+      background-color: #ffcc00;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    #controls button:hover {
+      background-color: #ffffff;
+      color: #ffcc00;
+    }
+
+    select {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    select option {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.8em;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      #controls {
+        flex-direction: column;
+      }
+
+      #controls button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main>
+    <h1>M Radio</h1>
+    <audio id="radio" controls autoplay>
+      <source src="//turkmedya.radyotvonline.net/alemfmaac?" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    
+    <div id="controls">
+      <button onclick="play()">Play</button>
+      <button onclick="pause()">Pause</button>
+      <button onclick="back()">Back</button>
+    </div>
+
+    <select id="stationSelect" onchange="changeStation()">
+      <option value="//turkmedya.radyotvonline.net/alemfmaac?">Alem FM</option>
+      <option value="//best.canli-radyo.biz/;stream.mp3">Best FM</option>
+    </select>
+  </main>
+
+  <footer>
+    &copy; 2024 M Radio
+  </footer>
+
+  <script>
+    var radio = document.getElementById("radio");
+
+    function play() {
+      radio.play();
+    }
+
+    function pause() {
+      radio.pause();
+    }
+
+    function back() {
+      window.location.href = 'index2.html'; // Redirects to index2.html when clicked
+    }
+
+    function changeStation() {
+      var stationSelect = document.getElementById("stationSelect");
+      radio.src = stationSelect.value;
+      radio.play();
+    }
+  </script>
+
+</body>
+</html>
