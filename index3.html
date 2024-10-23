@@ -9,9 +9,9 @@
         :root {
             --primary-color: #2196f3;
             --secondary-color: #1976d2;
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --text-color: #333333;
+            --background-color: #1a1a1a; /* Arka plan rengini koyulaştırdım */
+            --card-background: #2d2d2d; /* Kartların arka planını da koyulaştırdım */
+            --text-color: #ffffff; /* Metin rengini beyaz yaptım */
             --border-radius: 12px;
         }
 
@@ -158,11 +158,11 @@
 
         .playlist-item:hover {
             transform: translateX(5px);
-            background-color: #f0f0f0;
+            background-color: #404040;
         }
 
         .playlist-item.active {
-            background-color: #e3f2fd;
+            background-color: #404040;
             border-left: 4px solid var(--primary-color);
         }
 
@@ -205,13 +205,12 @@
             display: block;
         }
 
-        /* Custom scrollbar */
         .playlist::-webkit-scrollbar {
             width: 8px;
         }
 
         .playlist::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #404040;
             border-radius: 4px;
         }
 
@@ -224,7 +223,6 @@
             background: var(--secondary-color);
         }
 
-        /* Loading animation */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -234,7 +232,7 @@
             display: none;
             width: 24px;
             height: 24px;
-            border: 3px solid #f3f3f3;
+            border: 3px solid #404040;
             border-top: 3px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -247,6 +245,7 @@
     </style>
 </head>
 <body>
+    <!-- HTML içeriği değişmedi, önceki kod ile aynı -->
     <div class="container">
         <header class="header">
             <h1>Modern Music Player</h1>
@@ -276,6 +275,7 @@
         </section>
     </div>
 
+    <!-- JavaScript kodu değişmedi, önceki kod ile aynı -->
     <script>
         const audioPlayer = document.getElementById('audioPlayer');
         const playlist = document.getElementById('playlist');
@@ -287,7 +287,6 @@
         let db;
         let songs = [];
 
-        // Open IndexedDB
         const dbPromise = indexedDB.open('MusicPlayerDB', 1);
 
         dbPromise.onupgradeneeded = function(event) {
@@ -468,7 +467,6 @@
             }
         };
 
-        // File input styling
         const fileInputButton = document.querySelector('.file-input-button');
         audioFileInput.addEventListener('change', function() {
             const fileCount = this.files.length;
