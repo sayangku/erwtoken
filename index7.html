@@ -1,1 +1,280 @@
 
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oyun Pazarı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Header Styles */
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 5vw, 2rem); /* Responsive başlık boyutu */
+        }
+
+        /* Ana içerik alanı */
+        .container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Oyun Grid */
+        .games-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            margin: 0 auto;
+        }
+
+        /* Oyun Kartları */
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-card:active {
+            transform: scale(0.98);
+        }
+
+        .game-image {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .game-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .game-title {
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            color: #2c3e50;
+        }
+
+        .game-description {
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            color: #666;
+            flex-grow: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            width: min(95%, 1200px);
+            height: 90vh;
+            margin: 2.5vh auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #c0392b;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Mobil Optimizasyonları */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .game-card {
+                border-radius: 10px;
+            }
+
+            .game-info {
+                padding: 12px;
+            }
+
+            .modal-content {
+                width: 98%;
+                height: 95vh;
+                margin: 2.5vh auto;
+            }
+
+            .close-modal {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Dokunmatik cihazlar için iyileştirmeler */
+        @media (hover: none) {
+            .game-card:hover {
+                transform: none;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            }
+        }
+
+        /* Küçük ekranlar için iyileştirmeler */
+        @media (max-width: 480px) {
+            .games-grid {
+                gap: 15px;
+            }
+
+            header {
+                padding: 10px;
+            }
+
+            .game-title {
+                font-size: 1.1rem;
+            }
+
+            .game-description {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Oyun Pazarı</h1>
+    </header>
+
+    <div class="container">
+        <div class="games-grid">
+            <!-- Örnek Oyun Kartı 1 -->
+            <div class="game-card">
+                <img src="images/oyun1.jpg" alt="Oyun 1" class="game-image" onclick="openGame('games/oyun1.html')">
+                <div class="game-info">
+                    <h3 class="game-title">Oyun 1</h3>
+                    <p class="game-description">Heyecan verici bir macera oyunu! Bu oyunda kendinizi farklı dünyalarda bulacaksınız.</p>
+                </div>
+            </div>
+
+            <!-- Örnek Oyun Kartı 2 -->
+            <div class="game-card">
+                <img src="images/oyun2.jpg" alt="Oyun 2" class="game-image" onclick="openGame('games/oyun2.html')">
+                <div class="game-info">
+                    <h3 class="game-title">Oyun 2</h3>
+                    <p class="game-description">Zeka dolu bir bulmaca oyunu! Beyin jimnastiği yapmaya hazır olun.</p>
+                </div>
+            </div>
+
+            <!-- Örnek Oyun Kartı 3 -->
+            <div class="game-card">
+                <img src="images/oyun3.jpg" alt="Oyun 3" class="game-image" onclick="openGame('games/oyun3.html')">
+                <div class="game-info">
+                    <h3 class="game-title">Oyun 3</h3>
+                    <p class="game-description">Hızlı tempolu bir aksiyon oyunu! Reflekslerinizi test edin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">Kapat</button>
+            <iframe id="gameFrame" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        function openGame(gameUrl) {
+            const modal = document.getElementById('gameModal');
+            const gameFrame = document.getElementById('gameFrame');
+            modal.style.display = 'block';
+            gameFrame.src = gameUrl;
+            document.body.style.overflow = 'hidden'; // Sayfa kaydırmayı engelle
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('gameModal');
+            const gameFrame = document.getElementById('gameFrame');
+            modal.style.display = 'none';
+            gameFrame.src = '';
+            document.body.style.overflow = ''; // Sayfa kaydırmayı geri aç
+        }
+
+        // Modal dışına tıklanınca kapatma
+        window.onclick = function(event) {
+            const modal = document.getElementById('gameModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Dokunmatik cihazlar için kaydırma iyileştirmesi
+        document.addEventListener('touchmove', function(e) {
+            if (document.getElementById('gameModal').style.display === 'block') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
