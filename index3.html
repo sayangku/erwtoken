@@ -247,12 +247,32 @@
                 flex: 1 0 auto; /* Yüksekliği otomatik ayarlama */
             }
         }
+
+        .back-button {
+            padding: 10px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 auto;
+            display: block;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background: #1976d2;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
             <h1>M Player Local</h1>
+            <button class="back-button" onclick="window.location.href='index2.html'">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
         </header>
 
         <div class="content-area">
