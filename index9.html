@@ -87,10 +87,16 @@
                 logo: 'https://img-tlctv1.mncdn.com/mnresize/360/-/upload/23-11/02/EHD_355142_360.jpg',
                 streamUrl: 'https://dygvideo.dygdigital.com/api/redirect?PublisherId=27&ReferenceId=EHD_355142&SecretKey=NtvApiSecret2014*&.m3u8',
                 category: 'belgesel'
+            },
+            {
+                id: 'leyla-ile-mecnun',
+                name: 'Leyla ile Mecnun 1.Bölüm',
+                logo: 'https://www.trt1.com.tr///trtvod.com/thumb/trt1/d9/bc/d9bc4a086f1289d99552016894804efa-09.jpg',
+                streamUrl: 'https://trtvod.com/vod/trt1/d9/bc/d9bc4a086f1289d99552016894804efa-high.mp4',
+                category: 'korku'
             }
         ];
 
-        // Türkçe karakterleri ve boşlukları normalize etmek için yardımcı fonksiyon
         function normalizeText(text) {
             return text
                 .toLowerCase()
@@ -100,7 +106,7 @@
                 .replace(/ş/g, 's')
                 .replace(/ö/g, 'o')
                 .replace(/ç/g, 'c')
-                .replace(/\s+/g, '') // Boşlukları kaldır
+                .replace(/\s+/g, '')
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '');
         }
@@ -138,7 +144,6 @@
             
             renderChannels(filteredChannels);
             
-            // No results message
             const grid = document.getElementById('channelGrid');
             if (filteredChannels.length === 0 && searchInput !== '') {
                 grid.innerHTML = `
@@ -170,29 +175,71 @@
             mainPlayer.classList.remove('hidden');
             currentChannel.textContent = name;
 
-            // HLS desteği ile video oynatma
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-
-                hls.on(Hls.Events.ERROR, function(event, data) {
-                    console.log('HLS Error:', data);
-                    if (data.fatal) {
-                        console.log('Fatal error:', data);
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // URL'nin tipini kontrol et
+            const isMP4 = url.toLowerCase().endsWith('.mp4');
+            
+            if (isMP4) {
+                // MP4 videoları doğrudan oynat
                 video.src = url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
+                video.load();
+                video.play().catch(error => {
+                    console.log('Video oynatma hatası:', error);
+                    currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
                 });
+            } else {
+                // HLS stream için
+                if (Hls.isSupported()) {
+                    const hls = new Hls({
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        backBufferLength: 90
+                    });
+                    
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play().catch(error => {
+                            console.log('HLS video oynatma hatası:', error);
+                            currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
+                        });
+                    });
+
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        if (data.fatal) {
+                            switch(data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    console.log('Ağ hatası, yeniden bağlanmaya çalışılıyor...');
+                                    hls.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    console.log('Medya hatası, yeniden yükleniyor...');
+                                    hls.recoverMediaError();
+                                    break;
+                                default:
+                                    console.log('Kritik hata, oynatıcı yeniden başlatılıyor...');
+                                    hls.destroy();
+                                    break;
+                            }
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = url;
+                    video.addEventListener('loadedmetadata', function() {
+                        video.play().catch(error => {
+                            console.log('HLS video oynatma hatası:', error);
+                            currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
+                        });
+                    });
+                }
             }
             
-            mainPlayer.scrollIntoView({ behavior: 'smooth' });
+            mainPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            video.addEventListener('error', function(e) {
+                console.log('Video oynatma hatası:', e);
+                currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
+            });
         }
 
         function toggleFullscreen() {
