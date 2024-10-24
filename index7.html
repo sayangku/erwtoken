@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -30,7 +29,37 @@
         }
 
         header h1 {
-            font-size: clamp(1.5rem, 5vw, 2rem); /* Responsive başlık boyutu */
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            display: inline-block;
+            margin: 15px auto;
+            padding: 10px 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .back-button:active {
+            transform: scale(0.98);
+        }
+
+        .button-container {
+            text-align: center;
+            width: 100%;
+            padding: 0 15px;
         }
 
         /* Ana içerik alanı */
@@ -206,6 +235,10 @@
         <h1>@ETGAMES</h1>
     </header>
 
+    <div class="button-container">
+        <button onclick="goBack()" class="back-button">← Geri Dön</button>
+    </div>
+
     <div class="container">
         <div class="games-grid">
             <!-- KIZIL ELMA -->
@@ -245,12 +278,16 @@
     </div>
 
     <script>
+        function goBack() {
+            window.history.back();
+        }
+
         function openGame(gameUrl) {
             const modal = document.getElementById('gameModal');
             const gameFrame = document.getElementById('gameFrame');
             modal.style.display = 'block';
             gameFrame.src = gameUrl;
-            document.body.style.overflow = 'hidden'; // Sayfa kaydırmayı engelle
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
@@ -258,7 +295,7 @@
             const gameFrame = document.getElementById('gameFrame');
             modal.style.display = 'none';
             gameFrame.src = '';
-            document.body.style.overflow = ''; // Sayfa kaydırmayı geri aç
+            document.body.style.overflow = '';
         }
 
         // Modal dışına tıklanınca kapatma
