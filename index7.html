@@ -34,39 +34,37 @@
 
         /* Back Button Styles */
         .back-button {
-            display: inline-block;
-            margin: 15px auto;
-            padding: 10px 25px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 20px;
+            padding: 12px 30px;
             background: #3498db;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
+            transition: all 0.3s ease;
             text-decoration: none;
+            display: inline-block;
+            z-index: 99;
         }
 
         .back-button:hover {
             background: #2980b9;
-            transform: translateY(-2px);
+            transform: translateX(-50%) scale(1.05);
         }
 
         .back-button:active {
-            transform: scale(0.98);
-        }
-
-        .button-container {
-            text-align: center;
-            width: 100%;
-            padding: 0 15px;
+            transform: translateX(-50%) scale(0.95);
         }
 
         /* Ana içerik alanı */
         .container {
             padding: 15px;
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 60px auto 0 auto;
         }
 
         /* Oyun Grid */
@@ -200,6 +198,11 @@
                 padding: 8px 16px;
                 font-size: 0.9rem;
             }
+
+            .back-button {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
         }
 
         /* Dokunmatik cihazlar için iyileştirmeler */
@@ -235,10 +238,7 @@
         <h1>@ETGAMES</h1>
     </header>
 
-    <div class="button-container">
-        function goToIndex2() {
-            window.location.href = 'index2.html';
-    </div>
+    <a href="index2.html" class="back-button">Back</a>
 
     <div class="container">
         <div class="games-grid">
@@ -273,16 +273,12 @@
 
     <div id="gameModal" class="modal">
         <div class="modal-content">
-            <button class="close-modal" onclick="closeModal()">Exit</button>
+            <button class="close-modal" onclick="closeModal()">Kapat</button>
             <iframe id="gameFrame" src=""></iframe>
         </div>
     </div>
 
     <script>
-        function goBack() {
-            window.history.back();
-        }
-
         function openGame(gameUrl) {
             const modal = document.getElementById('gameModal');
             const gameFrame = document.getElementById('gameFrame');
