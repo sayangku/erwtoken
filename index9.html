@@ -69,6 +69,8 @@
     <script>
         let currentHls = null;
 
+        const DEFAULT_LOGO = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMzNDQ5NWUiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5DaW5lbWF4PC90ZXh0Pjwvc3ZnPg==';
+
         const channels = [
             {
                 id: '51bolge',
@@ -87,7 +89,7 @@
             {
                 id: 'leyla-ile-mecnun',
                 name: 'Leyla ile Mecnun 1.Bölüm',
-                logo: 'https://www.trt1.com.tr///trtvod.com/thumb/trt1/d9/bc/d9bc4a086f1289d99552016894804efa-09.jpg',
+                logo: 'https://i.pinimg.com/originals/40/f0/18/40f0189814f0ef4371363f3d036a53f3.jpg',
                 streamUrl: 'https://trtvod.com/vod/trt1/d9/bc/d9bc4a086f1289d99552016894804efa-high.mp4',
                 category: 'korku'
             }
@@ -112,12 +114,12 @@
                 <div class="channel-card bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors cursor-pointer"
                      onclick="playChannel('${channel.streamUrl}', '${channel.name}')">
                     <div class="p-4 flex flex-col items-center">
-                        <div class="w-24 h-24 mb-4 flex items-center justify-center">
+                        <div class="w-24 h-24 mb-4 flex items-center justify-center bg-gray-700 rounded-lg overflow-hidden">
                             <img 
                                 src="${channel.logo}" 
                                 alt="${channel.name}" 
-                                class="max-w-full max-h-full object-contain"
-                                onerror="this.src='/api/placeholder/96/96'"
+                                class="max-w-full max-h-full object-cover w-full h-full"
+                                onerror="this.onerror=null; this.src='${DEFAULT_LOGO}'"
                             >
                         </div>
                         <h3 class="text-lg font-semibold text-white text-center">${channel.name}</h3>
