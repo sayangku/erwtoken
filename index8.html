@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugün Ne Yapmalıyım?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 20px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .marker {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #e74c3c;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bugün Ne Yapmalıyım?</h1>
+        
+        <div class="inputs">
+            <input type="text" placeholder="Aktivite 1" class="activity-input">
+            <input type="text" placeholder="Aktivite 2" class="activity-input">
+            <input type="text" placeholder="Aktivite 3" class="activity-input">
+            <input type="text" placeholder="Aktivite 4" class="activity-input">
+            <input type="text" placeholder="Aktivite 5" class="activity-input">
+            <input type="text" placeholder="Aktivite 6" class="activity-input">
+        </div>
+
+        <button onclick="spin()">Çarkı Çevir!</button>
+
+        <div class="wheel-container">
+            <div class="marker"></div>
+            <canvas id="wheel" width="300" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            const activities = Array.from(document.querySelectorAll('.activity-input'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            if (activities.length < 2) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.arc(150, 150, 145, 0, 2 * Math.PI);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('En az 2 aktivite girin', 150, 150);
+                return false;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const sliceAngle = (2 * Math.PI) / activities.length;
+
+            for (let i = 0; i < activities.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 145, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = i % 2 === 0 ? '#3498db' : '#2980b9';
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+
+                // Text
+                ctx.save();
+                ctx.translate(150, 150);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = 'white';
+                ctx.font = '14px Arial';
+                ctx.fillText(activities[i], 130, 5);
+                ctx.restore();
+            }
+            return true;
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            
+            const activities = Array.from(document.querySelectorAll('.activity-input'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            if (activities.length < 2) {
+                alert('Lütfen en az 2 aktivite girin!');
+                return;
+            }
+
+            isSpinning = true;
+            const spins = 5 + Math.random() * 5;
+            const angle = spins * 360 + Math.random() * 360;
+            currentRotation += angle;
+
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+            }, 4000);
+        }
+
+        // Sayfa yüklendiğinde ve input değiştiğinde çarkı çiz
+        document.addEventListener('DOMContentLoaded', drawWheel);
+        document.querySelectorAll('.activity-input').forEach(input => {
+            input.addEventListener('input', drawWheel);
+        });
+    </script>
+</body>
+</html>
