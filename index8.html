@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bugün Ne Yapmalıyım?</title>
+    <title>What Should I Do Today?</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             margin: 0;
@@ -21,37 +20,42 @@
             max-width: 800px;
             width: 100%;
             text-align: center;
-            background-color: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             color: #2c3e50;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 3em;
+            background: linear-gradient(to right, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .inputs {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
         input {
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #3498db;
             border-radius: 5px;
             font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus {
-            border-color: #2980b9;
         }
 
         button {
@@ -72,8 +76,7 @@
 
         .wheel-container {
             position: relative;
-            width: 100%;
-            max-width: 300px;
+            width: 300px;
             height: 300px;
             margin: 20px auto;
         }
@@ -97,37 +100,22 @@
             border-top: 40px solid #e74c3c;
             z-index: 2;
         }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-
-            button {
-                font-size: 16px;
-                padding: 12px 24px;
-            }
-
-            .inputs {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bugün Ne Yapmalıyım?</h1>
-
+        <h1>What Should I Do Today?</h1>
+        
         <div class="inputs">
-            <input type="text" placeholder="Aktivite 1" class="activity-input">
-            <input type="text" placeholder="Aktivite 2" class="activity-input">
-            <input type="text" placeholder="Aktivite 3" class="activity-input">
-            <input type="text" placeholder="Aktivite 4" class="activity-input">
-            <input type="text" placeholder="Aktivite 5" class="activity-input">
-            <input type="text" placeholder="Aktivite 6" class="activity-input">
+            <input type="text" placeholder="Activity 1" class="activity-input">
+            <input type="text" placeholder="Activity 2" class="activity-input">
+            <input type="text" placeholder="Activity 3" class="activity-input">
+            <input type="text" placeholder="Activity 4" class="activity-input">
+            <input type="text" placeholder="Activity 5" class="activity-input">
+            <input type="text" placeholder="Activity 6" class="activity-input">
         </div>
 
-        <button onclick="spin()">Çarkı Çevir!</button>
+        <button onclick="spin()">Spin the Wheel!</button>
 
         <div class="wheel-container">
             <div class="marker"></div>
@@ -155,7 +143,7 @@
                 ctx.fillStyle = 'white';
                 ctx.font = '16px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('En az 2 aktivite girin', 150, 150);
+                ctx.fillText('Enter at least 2 activities', 150, 150);
                 return false;
             }
 
@@ -193,7 +181,7 @@
                 .filter(value => value !== '');
 
             if (activities.length < 2) {
-                alert('Lütfen en az 2 aktivite girin!');
+                alert('Please enter at least 2 activities!');
                 return;
             }
 
@@ -209,7 +197,6 @@
             }, 4000);
         }
 
-        // Sayfa yüklendiğinde ve input değiştiğinde çarkı çiz
         document.addEventListener('DOMContentLoaded', drawWheel);
         document.querySelectorAll('.activity-input').forEach(input => {
             input.addEventListener('input', drawWheel);
