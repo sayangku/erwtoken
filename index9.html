@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRT Canlı Yayın</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <h1 class="text-3xl font-bold text-white mb-4 md:mb-0">TRT Canlı Yayın</h1>
+                <div class="relative w-full md:w-1/3">
+                    <input 
+                        type="search" 
+                        placeholder="Kanal ara... (örn: TRT1, TRTSpor)" 
+                        class="w-full px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        id="searchInput"
+                        onkeyup="filterChannels()"
+                    >
+                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Player -->
+        <div id="mainPlayer" class="hidden mb-8 bg-black rounded-lg shadow-lg overflow-hidden">
+            <div class="aspect-w-16 aspect-h-9">
+                <iframe
+                    id="playerIframe"
+                    class="w-full h-full"
+                    frameborder="0"
+                    allowfullscreen
+                ></iframe>
+            </div>
+            <div class="p-4 bg-gray-800">
+                <div class="flex items-center justify-between">
+                    <h2 id="currentChannel" class="text-xl font-semibold text-white"></h2>
+                    <button 
+                        onclick="toggleFullscreen()" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        <i class="fas fa-expand mr-2"></i>Tam Ekran
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel Grid -->
+        <div id="channelGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <!-- Channels will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const channels = [
+            {
+                id: 'trt1',
+                name: 'TRT 1',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/TRT_1_logo_%282021-%29.svg/512px-TRT_1_logo_%282021-%29.svg.png',
+                url: 'https://www.tabii.com/watch/live/trt1?trackId=150002'
+            },
+            {
+                id: 'trtspor',
+                name: 'TRT Spor',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/TRT_Spor_logo_%282022%29.svg/512px-TRT_Spor_logo_%282022%29.svg.png',
+                url: 'https://www.tabii.com/watch/live/trtspor?trackId=150022'
+            }
+        ];
+
+        // Türkçe karakterleri ve boşlukları normalize etmek için yardımcı fonksiyon
+        function normalizeText(text) {
+            return text
+                .toLowerCase()
+                .replace(/ı/g, 'i')
+                .replace(/ğ/g, 'g')
+                .replace(/ü/g, 'u')
+                .replace(/ş/g, 's')
+                .replace(/ö/g, 'o')
+                .replace(/ç/g, 'c')
+                .replace(/\s+/g, '') // Boşlukları kaldır
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function createChannelCard(channel) {
+            return `
+                <div class="channel-card bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors cursor-pointer"
+                     onclick="playChannel('${channel.url}', '${channel.name}')">
+                    <div class="p-4 flex flex-col items-center">
+                        <div class="w-24 h-24 mb-4 flex items-center justify-center">
+                            <img 
+                                src="${channel.logo}" 
+                                alt="${channel.name}" 
+                                class="max-w-full max-h-full object-contain"
+                                onerror="this.src='/api/placeholder/96/96'"
+                            >
+                        </div>
+                        <h3 class="text-lg font-semibold text-white text-center">${channel.name}</h3>
+                        <button class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full">
+                            <i class="fas fa-play mr-2"></i>İzle
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterChannels() {
+            const searchInput = document.getElementById('searchInput').value;
+            const normalizedSearch = normalizeText(searchInput);
+            
+            const filteredChannels = channels.filter(channel => {
+                const normalizedChannelName = normalizeText(channel.name);
+                return normalizedChannelName.includes(normalizedSearch);
+            });
+            
+            renderChannels(filteredChannels);
+            
+            // No results message
+            const grid = document.getElementById('channelGrid');
+            if (filteredChannels.length === 0 && searchInput !== '') {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center text-gray-400 py-8">
+                        "${searchInput}" için sonuç bulunamadı
+                    </div>
+                `;
+            }
+        }
+
+        function renderChannels(channelsToRender = channels) {
+            const grid = document.getElementById('channelGrid');
+            grid.innerHTML = channelsToRender
+                .map(channel => createChannelCard(channel))
+                .join('');
+        }
+
+        function playChannel(url, name) {
+            const mainPlayer = document.getElementById('mainPlayer');
+            const playerIframe = document.getElementById('playerIframe');
+            const currentChannel = document.getElementById('currentChannel');
+            
+            mainPlayer.classList.remove('hidden');
+            playerIframe.src = url;
+            currentChannel.textContent = name;
+            
+            mainPlayer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleFullscreen() {
+            const iframe = document.getElementById('playerIframe');
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) {
+                iframe.msRequestFullscreen();
+            }
+        }
+
+        // İlk yükleme
+        renderChannels();
+    </script>
+</body>
+</html>
