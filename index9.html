@@ -10,7 +10,6 @@
 </head>
 <body class="bg-gray-900 min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
         <header class="mb-8">
             <div class="flex flex-col md:flex-row items-center justify-between">
                 <h1 
@@ -32,14 +31,12 @@
             </div>
         </header>
 
-        <!-- Main Player -->
         <div id="mainPlayer" class="hidden mb-8 bg-black rounded-lg shadow-lg overflow-hidden">
             <div class="aspect-w-16 aspect-h-9 relative">
                 <video 
                     id="video"
                     class="w-full h-full"
                     controls
-                    autoplay
                     playsinline
                 ></video>
             </div>
@@ -56,7 +53,6 @@
             </div>
         </div>
 
-        <!-- Category Filter -->
         <div class="mb-8">
             <select id="categorySelect" class="w-full px-4 py-2 bg-gray-800 text-white rounded-lg" onchange="filterByCategory()">
                 <option value="">Kategori Seçin</option>
@@ -66,13 +62,13 @@
             </select>
         </div>
 
-        <!-- Channel Grid -->
         <div id="channelGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            <!-- Channels will be inserted here -->
         </div>
     </div>
 
     <script>
+        let currentHls = null;
+
         const channels = [
             {
                 id: '51bolge',
@@ -133,6 +129,114 @@
             `;
         }
 
+        async function stopCurrentVideo() {
+            const video = document.getElementById('video');
+            
+            try {
+                await video.pause();
+                
+                if (currentHls) {
+                    currentHls.destroy();
+                    currentHls = null;
+                }
+                
+                video.removeAttribute('src');
+                video.load();
+            } catch (error) {
+                console.error('Video durdurma hatası:', error);
+            }
+        }
+
+        async function playChannel(url, name) {
+            await stopCurrentVideo();
+            
+            const mainPlayer = document.getElementById('mainPlayer');
+            const video = document.getElementById('video');
+            const currentChannel = document.getElementById('currentChannel');
+            
+            mainPlayer.classList.remove('hidden');
+            currentChannel.textContent = name;
+
+            try {
+                const isMP4 = url.toLowerCase().endsWith('.mp4');
+                
+                if (isMP4) {
+                    video.src = url;
+                    video.load();
+                    await video.play();
+                } else {
+                    if (Hls.isSupported()) {
+                        currentHls = new Hls({
+                            debug: false,
+                            enableWorker: true,
+                            lowLatencyMode: true,
+                            backBufferLength: 90,
+                            manifestLoadingTimeOut: 10000,
+                            manifestLoadingMaxRetry: 3,
+                            manifestLoadingRetryDelay: 500,
+                        });
+                        
+                        currentHls.loadSource(url);
+                        currentHls.attachMedia(video);
+                        
+                        await new Promise((resolve, reject) => {
+                            currentHls.on(Hls.Events.MANIFEST_PARSED, async () => {
+                                try {
+                                    await video.play();
+                                    resolve();
+                                } catch (error) {
+                                    reject(error);
+                                }
+                            });
+
+                            currentHls.on(Hls.Events.ERROR, (event, data) => {
+                                if (data.fatal) {
+                                    reject(data);
+                                }
+                            });
+                        });
+
+                        currentHls.on(Hls.Events.ERROR, async (event, data) => {
+                            if (data.fatal) {
+                                switch(data.type) {
+                                    case Hls.ErrorTypes.NETWORK_ERROR:
+                                        console.log('Ağ hatası, yeniden bağlanmaya çalışılıyor...');
+                                        currentHls.startLoad();
+                                        break;
+                                    case Hls.ErrorTypes.MEDIA_ERROR:
+                                        console.log('Medya hatası, yeniden yükleniyor...');
+                                        currentHls.recoverMediaError();
+                                        break;
+                                    default:
+                                        console.log('Kritik hata, oynatıcı yeniden başlatılıyor...');
+                                        await stopCurrentVideo();
+                                        await playChannel(url, name);
+                                        break;
+                                }
+                            }
+                        });
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        video.src = url;
+                        await new Promise((resolve) => {
+                            video.addEventListener('loadedmetadata', async () => {
+                                try {
+                                    await video.play();
+                                    resolve();
+                                } catch (error) {
+                                    console.error('Native HLS oynatma hatası:', error);
+                                }
+                            }, { once: true });
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Video oynatma hatası:', error);
+                currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
+            }
+            
+            mainPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         function filterChannels() {
             const searchInput = document.getElementById('searchInput').value;
             const normalizedSearch = normalizeText(searchInput);
@@ -165,81 +269,6 @@
             grid.innerHTML = channelsToRender
                 .map(channel => createChannelCard(channel))
                 .join('');
-        }
-
-        function playChannel(url, name) {
-            const mainPlayer = document.getElementById('mainPlayer');
-            const video = document.getElementById('video');
-            const currentChannel = document.getElementById('currentChannel');
-            
-            mainPlayer.classList.remove('hidden');
-            currentChannel.textContent = name;
-
-            // URL'nin tipini kontrol et
-            const isMP4 = url.toLowerCase().endsWith('.mp4');
-            
-            if (isMP4) {
-                // MP4 videoları doğrudan oynat
-                video.src = url;
-                video.load();
-                video.play().catch(error => {
-                    console.log('Video oynatma hatası:', error);
-                    currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
-                });
-            } else {
-                // HLS stream için
-                if (Hls.isSupported()) {
-                    const hls = new Hls({
-                        debug: false,
-                        enableWorker: true,
-                        lowLatencyMode: true,
-                        backBufferLength: 90
-                    });
-                    
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        video.play().catch(error => {
-                            console.log('HLS video oynatma hatası:', error);
-                            currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
-                        });
-                    });
-
-                    hls.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) {
-                            switch(data.type) {
-                                case Hls.ErrorTypes.NETWORK_ERROR:
-                                    console.log('Ağ hatası, yeniden bağlanmaya çalışılıyor...');
-                                    hls.startLoad();
-                                    break;
-                                case Hls.ErrorTypes.MEDIA_ERROR:
-                                    console.log('Medya hatası, yeniden yükleniyor...');
-                                    hls.recoverMediaError();
-                                    break;
-                                default:
-                                    console.log('Kritik hata, oynatıcı yeniden başlatılıyor...');
-                                    hls.destroy();
-                                    break;
-                            }
-                        }
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = url;
-                    video.addEventListener('loadedmetadata', function() {
-                        video.play().catch(error => {
-                            console.log('HLS video oynatma hatası:', error);
-                            currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
-                        });
-                    });
-                }
-            }
-            
-            mainPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            video.addEventListener('error', function(e) {
-                console.log('Video oynatma hatası:', e);
-                currentChannel.textContent = `${name} (Oynatma hatası oluştu)`;
-            });
         }
 
         function toggleFullscreen() {
