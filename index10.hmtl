@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATV Canlı Yayın</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js"></script>
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-black rounded-lg overflow-hidden shadow-lg">
+                <div class="aspect-w-16 aspect-h-9 relative">
+                    <video 
+                        id="video"
+                        class="w-full h-full"
+                        controls
+                        autoplay
+                        playsinline
+                    ></video>
+                </div>
+                <div class="p-4 bg-gray-800">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-xl font-semibold text-white flex items-center">
+                            <img src="http://assets.tvcdn.net/89a47b4b-5d20-4248-9f4c-a3d2756072dd.png" 
+                                 alt="ATV Logo" 
+                                 class="w-8 h-8 mr-2"
+                                 onerror="this.src='/api/placeholder/32/32'">
+                            ATV Canlı Yayın
+                        </h1>
+                        <button 
+                            onclick="toggleFullscreen()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Tam Ekran
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const streamUrl = 'http://stream.tvcdn.net/ulusal/atv.m3u8';
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                console.log('HLS Error:', data);
+                if (data.fatal) {
+                    console.log('Fatal error:', data);
+                }
+            });
+        }
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = streamUrl;
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (video.requestFullscreen) {
+                    video.requestFullscreen();
+                } else if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
+                } else if (video.msRequestFullscreen) {
+                    video.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
