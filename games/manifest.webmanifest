@@ -1,0 +1,33 @@
+{
+  "name": "Kızıl Elma",
+  "short_name": "Kızıl Elma",
+  "id": "com.ETGAMES.KIZILELMA",
+  "description": "Klavye deki  SPACE  tuşu ile ateş edebilirsiniz.\n\nOK tuşları ile de yön kontrölü yapabilirsiniz.\n\nKızıl Elma, aksiyon ve macera dolu bir insansız savaş uçağı oyunudur. Oyuncular, Kızıl Elma uçağını yönlendirerek görevleri tamamlamaya ve düşmanları yok etmeye çalışacaktır. Zorlu ve çeşitli hava muharebeleri, oyuncuların pilotaj becerilerini ve stratejik düşüncelerini zorlayacak. Oyun, ayrıca farklı modlar, güncelleme ve özelleştirme seçenekleri de sunuyor. Kızıl Elma, macera arayan oyuncular için mükemmel bir seçenektir.\n\nGoogle Play link : https://play.google.com/store/apps/details?id=com.ETGAMES.KIZILELMA\n\nYou can fire using the SPACE key on the keyboard.\n\nYou can also control the direction with the OK keys on the keyboard.\n\nKızıl Elma is an unmanned combat aerial vehicle game filled with action and adventure. Players will attempt to complete missions and destroy enemies by piloting the Kizil Elma aircraft. Challenging and varied aerial battles will test players' piloting skills and strategic thinking. The game also offers different modes, upgrades, and customization options. Kizil Elma is an excellent choice for players seeking adventure.\n\nGoogle Play link : https://play.google.com/store/apps/details?id=com.ETGAMES.KIZILELMA",
+  "orientation": "portrait",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "black",
+  "categories": ["games", "entertainment"],
+  "icons": [{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "36x36"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "48x48"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "72x72"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "96x96"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "144x144"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius_logo.png",
+        "sizes": "192x192"
+      },{
+        "src": "69aa3c97021eabfb06c9a9f4566b729091538181ab4430015c8c9f275cbd8826-mius.png",
+        "sizes": "512x512"
+      }]
+}
