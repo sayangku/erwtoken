@@ -66,8 +66,9 @@
             border-radius: 25px;
             cursor: pointer;
             font-size: 18px;
-            margin: 20px;
+            margin: 10px 0; /* Yükseklikten dolayı yukarı ve aşağıdan eşit boşluk verildi */
             transition: background-color 0.3s ease;
+            width: 300px; /* Buton boyutunu sabit tutmak için genişlik ayarlandı */
         }
 
         button:hover {
@@ -115,7 +116,8 @@
             <input type="text" placeholder="Activity 6" class="activity-input">
         </div>
 
-        <button onclick="spin()">Spin the Wheel!</button>
+        <button onclick="goBack()">Back</button> <!-- Back butonu yukarıda -->
+        <button onclick="spin()">Spin the Wheel!</button> <!-- Çark döndürme butonu -->
 
         <div class="wheel-container">
             <div class="marker"></div>
@@ -195,6 +197,10 @@
             setTimeout(() => {
                 isSpinning = false;
             }, 4000);
+        }
+
+        function goBack() {
+            window.location.href = 'index2.html'; // Back butonuna tıklandığında yönlendirme
         }
 
         document.addEventListener('DOMContentLoaded', drawWheel);
