@@ -123,16 +123,16 @@ gdjs.copyArray(runtimeScene.getObjects("butonnn12"), gdjs.HIKAYE_953Code.GDbuton
 gdjs.copyArray(runtimeScene.getObjects("internet"), gdjs.HIKAYE_953Code.GDinternetObjects1);
 {gdjs.adMob.loadInterstitial("ca-app-pub-4627115835678510/7175256167", "", false);
 }{for(var i = 0, len = gdjs.HIKAYE_953Code.GDbutonnn12Objects1.length ;i < len;++i) {
-    gdjs.HIKAYE_953Code.GDbutonnn12Objects1[i].hide();
+    gdjs.HIKAYE_953Code.GDbutonnn12Objects1[i].hide(false);
 }
 }{for(var i = 0, len = gdjs.HIKAYE_953Code.GDNewText3Objects1.length ;i < len;++i) {
-    gdjs.HIKAYE_953Code.GDNewText3Objects1[i].hide();
+    gdjs.HIKAYE_953Code.GDNewText3Objects1[i].hide(false);
 }
 }{for(var i = 0, len = gdjs.HIKAYE_953Code.GDinternetObjects1.length ;i < len;++i) {
-    gdjs.HIKAYE_953Code.GDinternetObjects1[i].hide();
+    gdjs.HIKAYE_953Code.GDinternetObjects1[i].hide(false);
 }
 }{for(var i = 0, len = gdjs.HIKAYE_953Code.GDbutonnn12Objects1.length ;i < len;++i) {
-    gdjs.HIKAYE_953Code.GDbutonnn12Objects1[i].enableEffect("Effect", false);
+    gdjs.HIKAYE_953Code.GDbutonnn12Objects1[i].enableEffect("Effect", true);
 }
 }}
 
